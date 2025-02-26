@@ -1,10 +1,17 @@
 from aiogram import Router, html, F
 from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, CallbackQuery
+from aiogram.fsm.state import StatesGroup, State
+from aiogram.fsm.context import FSMContext
 
 import app.keyboards as kb
 
 router = Router()
+
+
+class Reg(StatesGroup):
+    name = State()
+    number = State()
 
 
 # /start
@@ -71,16 +78,6 @@ async def get_photo(message: Message):
     await message.answer_photo(photo=photo_id, caption='default user avatar')
 
 
-@router.message()
-async def echo_handler(message: Message) -> None:
-    try:
-        # Send a copy of the received message
-        await message.send_copy(chat_id=message.chat.id)
-    except TypeError:
-        # But not all the types is supported to be copied so need to handle it
-        await message.answer("Nice try!")
-
-
 @router.callback_query(F.data == "catalog")
 async def catalog(callback: CallbackQuery):
     await callback.answer("You have choose catalog")
@@ -90,3 +87,37 @@ async def catalog(callback: CallbackQuery):
     await callback.message.edit_text("callback Catalog", reply_markup=await kb.inline_cities())
 # @router.callback_query(F.data == "cart")
 # @router.callback_query(F.data == "contacts")
+
+
+@router.message(Command("register"))
+async def reg_one(message: Message, state: FSMContext):
+    await state.set_state(Reg.name)
+    await message.answer("Input your name:")
+
+
+@router.message(Reg.name)
+async def reg_two(message: Message, state: FSMContext):
+    await state.update_data(name=message.text)
+    await state.set_state(Reg.number)
+    await message.answer("Input your number:")
+
+
+@router.message(Reg.number)
+async def two_three(message: Message, state: FSMContext):
+    await state.update_data(number=message.text)
+    data = await state.get_data()
+    await message.answer("Registration done!")
+    await message.answer(f"Name: {data["name"]} Number: {data["number"]}")
+    await state.clear()
+
+# ================================================================================== echo_handler !!!
+
+
+@router.message()
+async def echo_handler(message: Message) -> None:
+    try:
+        # Send a copy of the received message
+        await message.send_copy(chat_id=message.chat.id)
+    except TypeError:
+        # But not all the types is supported to be copied so need to handle it
+        await message.answer("Nice try!")
