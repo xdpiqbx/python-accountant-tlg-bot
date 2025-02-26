@@ -1,6 +1,6 @@
 from aiogram import Router, html, F
 from aiogram.filters import CommandStart, Command
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery
 
 import app.keyboards as kb
 
@@ -12,7 +12,7 @@ router = Router()
 async def command_start_handler(message: Message) -> None:
     await message.answer(
         f"Hello, {html.bold(message.from_user.full_name)}!",
-        reply_markup=kb.main
+        reply_markup=kb.mainInline
     )
 
 
@@ -79,3 +79,14 @@ async def echo_handler(message: Message) -> None:
     except TypeError:
         # But not all the types is supported to be copied so need to handle it
         await message.answer("Nice try!")
+
+
+@router.callback_query(F.data == "catalog")
+async def catalog(callback: CallbackQuery):
+    await callback.answer("You have choose catalog")
+    # await callback.answer("You have chosen catalog", show_alert=True)
+    # await callback.message.answer("callback Catalog")
+    # await callback.message.answer("callback Catalog")
+    await callback.message.edit_text("callback Catalog", reply_markup=await kb.inline_cities())
+# @router.callback_query(F.data == "cart")
+# @router.callback_query(F.data == "contacts")

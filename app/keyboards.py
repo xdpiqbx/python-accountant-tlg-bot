@@ -10,6 +10,14 @@ main = ReplyKeyboardMarkup(keyboard=[
 ], resize_keyboard=True, input_field_placeholder="Choose menu bottom...")
 
 # Inline buttons
+mainInline = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text="Catalog", callback_data="catalog")],
+    [
+        InlineKeyboardButton(text="Cart", callback_data="cart"),
+        InlineKeyboardButton(text="Contacts", callback_data="contacts")
+    ]
+])
+
 settings = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text="YouTube", url="https://youtube.com")],
     [InlineKeyboardButton(text="Google", url="http://google.com")],
