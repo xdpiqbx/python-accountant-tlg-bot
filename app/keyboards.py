@@ -23,6 +23,9 @@ settings = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text="Google", url="http://google.com")],
 ])
 
+get_contact = ReplyKeyboardMarkup(keyboard=[
+    [KeyboardButton(text="Send your contact", request_contact=True)]
+], resize_keyboard=True)
 
 async def reply_cars():
     cars = ["Tesla", "Mercedes", "Mitsubishi"]

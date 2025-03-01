@@ -12,6 +12,7 @@ router = Router()
 # router.message.middleware(TestMiddleware())
 router.message.outer_middleware(TestMiddleware())
 
+
 class Reg(StatesGroup):
     name = State()
     number = State()
@@ -32,6 +33,14 @@ async def get_help(message: Message):
     await message.answer(
         f"HELP \n{message.from_user.id} \n{message.from_user.first_name}",
         reply_markup=kb.settings
+    )
+
+
+@router.message(Command('contact'))
+async def get_help(message: Message):
+    await message.answer(
+        f"Contact send",
+        reply_markup=kb.get_contact
     )
 
 
@@ -88,6 +97,8 @@ async def catalog(callback: CallbackQuery):
     # await callback.message.answer("callback Catalog")
     # await callback.message.answer("callback Catalog")
     await callback.message.edit_text("callback Catalog", reply_markup=await kb.inline_cities())
+
+
 # @router.callback_query(F.data == "cart")
 # @router.callback_query(F.data == "contacts")
 
