@@ -5,6 +5,8 @@ name = "pypi"
 
 [packages]
 aiogram = "*"
+psycopg2 = "*"
+cloudinary = "*"
 
 [dev-packages]
 
