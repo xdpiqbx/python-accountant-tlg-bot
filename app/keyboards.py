@@ -3,6 +3,13 @@ from aiogram.types import (ReplyKeyboardMarkup, KeyboardButton,
 
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 
+# Inline buttons
+add_new_warrior = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text="Add to database", callback_data="add_new_warrior_to_db")],
+    [InlineKeyboardButton(text="Cancel", callback_data="cancel_new_warrior")]
+])
+# ============================================================================
+
 # Reply big buttons
 main = ReplyKeyboardMarkup(keyboard=[
     [KeyboardButton(text="Catalog")],

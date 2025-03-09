@@ -5,35 +5,69 @@ from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
 
 import app.keyboards as kb
-from app.middlewares import TestMiddleware
+# from app.middlewares import TestMiddleware
 
 from env_variables import EXPERT
+from app.accountant_db import is_warrior_exists, insert_new_warrior
 
 router = Router()
 
 # router.message.middleware(TestMiddleware())
-router.message.outer_middleware(TestMiddleware())
+# router.message.outer_middleware(TestMiddleware())
+
+
+class Register(StatesGroup):
+    nic = State()
+    tlg_id = State()
 
 
 class CashCheck(StatesGroup):
-    user_id = State()
     image_url = State()
-    money_spent = State()
+    amount = State()
 
 # /start
 @router.message(CommandStart())
-async def command_start_handler(message: Message) -> None:
-    # get_by_tlg_id(message.from_user.id)
+async def command_start_handler(message: Message, state: FSMContext) -> None:
+    if not await is_warrior_exists(str(message.from_user.id)):
+        await message.answer("REGISTRATION needed! Wait for approve.")
+        await state.set_state(Register.nic)
+        await message.answer("Send me your call sign (in english):")
+    else:
+        await message.answer("Hello")
 
-    # if not exist, write message to eXpert about new user!
+@router.message(Register.nic)
+async def register(message: Message, state: FSMContext):
+    tlg_id = message.from_user.id
+    nic = message.text
+    await state.update_data(tlg_id=tlg_id, nic=nic)
     await message.forward(chat_id=EXPERT)
     await message.answer(
-        f"Hello, we have new user: \n"
-        f"{html.bold(message.from_user.full_name)} \n"
-        f"{html.bold(message.from_user.id)}!"
-    )
-    # when eXpert will add to DB send message to new user with offer to press start
-    # if in DB
+        f"We have a new warrior:\nCall sign: {nic}\n Telegram id: {tlg_id}",
+        reply_markup=kb.add_new_warrior)
+
+@router.callback_query(F.data == "add_new_warrior_to_db")
+async def add_new_warrior_to_db(callback: CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    insert_new_warrior((data["tlg_id"], data["nic"]))
+    await callback.bot.send_message(
+        chat_id=EXPERT,
+        text=f"Name: {data['tlg_id']} Number: {data['nic']}. Registration done!")
+    await callback.bot.send_message(
+        chat_id=data["tlg_id"],
+        text=f"{data['nic']} registration done!")
+    await state.clear()
+
+
+@router.callback_query(F.data == "cancel_new_warrior")
+async def cancel_new(callback: CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    await callback.bot.send_message(
+        chat_id=EXPERT,
+        text=f"Has been canceled\n Name: {data['tlg_id']} Number: {data['nic']}.")
+    await callback.bot.send_message(
+        chat_id=data["tlg_id"],
+        text=f"I do not know you/")
+    await state.clear()
 
 
 # # /start
