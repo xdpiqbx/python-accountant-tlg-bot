@@ -35,6 +35,17 @@ def create_tables():
                     )
                 """)
 
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS cash_back (
+                        id SERIAL PRIMARY KEY,
+                        warrior_id INT NOT NULL,
+                        image_url TEXT,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        amount DECIMAL(10,2) NOT NULL,
+                        CONSTRAINT fk_warrior FOREIGN KEY (warrior_id) REFERENCES warrior (id) ON DELETE CASCADE
+                    )
+                """)
+
                 conn.commit()
                 print("Tables created successfully!")
     except Exception as e:
