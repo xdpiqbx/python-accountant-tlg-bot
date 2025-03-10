@@ -1,5 +1,8 @@
-def select_by_tlg_id():
-    return "SELECT id, nic FROM warrior WHERE tlg_id = %s"
+def select_by_tlg_id(table_name):
+    return f"SELECT id, nic FROM {table_name} WHERE tlg_id = %s"
+
+def select_all_users(table_name):
+    return f"SELECT tlg_id, nic FROM {table_name}"
 
 def create_table_warrior():
     return """
@@ -7,6 +10,26 @@ def create_table_warrior():
             id SERIAL PRIMARY KEY,
             tlg_id VARCHAR(32) NOT NULL,
             nic VARCHAR(25) NOT NULL
+        )
+    """
+
+def create_table_candidate():
+    return """
+        CREATE TABLE IF NOT EXISTS candidate (
+            id SERIAL PRIMARY KEY,
+            tlg_id VARCHAR(32) NOT NULL,
+            nic VARCHAR(25) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """
+
+def create_table_banned():
+    return """
+        CREATE TABLE IF NOT EXISTS banned (
+            id SERIAL PRIMARY KEY,
+            tlg_id VARCHAR(32) NOT NULL,
+            nic VARCHAR(25) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """
 
@@ -34,8 +57,13 @@ def create_table_cash_back():
         )
     """
 
-def insert_new_warrior_to_db():
-    return """
-        INSERT INTO warrior (tlg_id, nic)
-        VALUES (%s, %s)
-    """
+def insert_new_user_to_db(table_name):
+    return (
+            f"INSERT INTO {table_name} (tlg_id, nic)"
+            f"VALUES (%s, %s)"
+    )
+
+def delete_by_tlg_id(table_name):
+    return (
+        f"DELETE FROM {table_name} WHERE tlg_id = %s;"
+    )

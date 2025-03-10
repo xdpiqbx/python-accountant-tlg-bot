@@ -1,74 +1,107 @@
 from aiogram import Router, html, F
 from aiogram.filters import CommandStart, Command
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
 
 import app.keyboards as kb
-# from app.middlewares import TestMiddleware
+import app.accountant_db as db
 
 from env_variables import EXPERT
-from app.accountant_db import is_warrior_exists, insert_new_warrior
+# from app.accountant_db import is_user_exists, insert_new_user
+
 
 router = Router()
-
-# router.message.middleware(TestMiddleware())
-# router.message.outer_middleware(TestMiddleware())
 
 
 class Register(StatesGroup):
     nic = State()
-    tlg_id = State()
 
 
 class CashCheck(StatesGroup):
     image_url = State()
     amount = State()
 
+
 # /start
 @router.message(CommandStart())
 async def command_start_handler(message: Message, state: FSMContext) -> None:
-    if not await is_warrior_exists(str(message.from_user.id)):
-        await message.answer("REGISTRATION needed! Wait for approve.")
+    if not await db.is_user_exists(str(message.from_user.id), "warrior"):
+        # is banned???
+        await message.answer("REGISTRATION needed.")
         await state.set_state(Register.nic)
         await message.answer("Send me your call sign (in english):")
     else:
         await message.answer("Hello")
 
+
 @router.message(Register.nic)
 async def register(message: Message, state: FSMContext):
-    tlg_id = message.from_user.id
+    tlg_id = str(message.from_user.id)
     nic = message.text
-    await state.update_data(tlg_id=tlg_id, nic=nic)
-    await message.forward(chat_id=EXPERT)
-    await message.answer(
-        f"We have a new warrior:\nCall sign: {nic}\n Telegram id: {tlg_id}",
-        reply_markup=kb.add_new_warrior)
-
-@router.callback_query(F.data == "add_new_warrior_to_db")
-async def add_new_warrior_to_db(callback: CallbackQuery, state: FSMContext):
-    data = await state.get_data()
-    insert_new_warrior((data["tlg_id"], data["nic"]))
-    await callback.bot.send_message(
-        chat_id=EXPERT,
-        text=f"Name: {data['tlg_id']} Number: {data['nic']}. Registration done!")
-    await callback.bot.send_message(
-        chat_id=data["tlg_id"],
-        text=f"{data['nic']} registration done!")
     await state.clear()
+    if not await db.is_user_exists(tlg_id, "candidate"):
+        db.insert_new_user("candidate", (tlg_id, nic,))
+        await message.answer("Wait for approve.")
+        await message.bot.send_message(
+            chat_id=EXPERT,
+            text=f"We have a new warrior:\nCall sign: {nic}\nTelegram id: {tlg_id}",
+            reply_markup=await kb.list_of_candidates()
+        )
+    else:
+        await message.answer("I know about you. Just wait.")
+
+@router.callback_query(F.data.startswith("add_usr"))
+async def add_new_warrior_to_db(callback: CallbackQuery):
+    user_data = tuple(callback.data.split(":")[1:])
+    # add user to warrior
+    db.insert_new_user("warrior", user_data)
+    # remove from candidates & banned
+    db.delete_from_db_by_tlg_id("candidate", user_data[0])
+    db.delete_from_db_by_tlg_id("banned", user_data[0])
+    await callback.bot.send_message(chat_id=user_data[0], text="✅ Wellcome to the club =)")
+    await callback.message.edit_reply_markup(f"Added to db. {user_data[1]}")
+
+
+@router.callback_query(F.data.startswith("ban_usr"))
+async def add_new_warrior_to_db(callback: CallbackQuery):
+    user_data = tuple(callback.data.split(":")[1:])
+    db.insert_new_user("banned", user_data)
+    db.delete_from_db_by_tlg_id("candidate", user_data[0])
+    db.delete_from_db_by_tlg_id("warrior", user_data[0])
+    await callback.bot.send_message(chat_id=user_data[0], text="❌ You have been banned ❌")
+    await callback.message.edit_reply_markup(f"Banned. {user_data[1]}")
+
+    # data = await state.get_data()
+    # db.insert_new_user((data["tlg_id"], data["nic"]), "warrior")
+    # # remove from candidate!!!
+    # await callback.bot.send_message(
+    #     chat_id=EXPERT,
+    #     text=f"Name: {data['tlg_id']} Number: {data['nic']}. Registration done!")
+    # await callback.bot.send_message(
+    #     chat_id=data["tlg_id"],
+    #     text=f"{data['nic']} registration done!")
+    # await state.clear()
 
 
 @router.callback_query(F.data == "cancel_new_warrior")
 async def cancel_new(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
-    await callback.bot.send_message(
-        chat_id=EXPERT,
-        text=f"Has been canceled\n Name: {data['tlg_id']} Number: {data['nic']}.")
-    await callback.bot.send_message(
-        chat_id=data["tlg_id"],
-        text=f"I do not know you/")
-    await state.clear()
 
+    if not data:
+        await callback.answer("No registration data found.", show_alert=True)
+        return
+
+    tlg_id = data.get("tlg_id", "Unknown")
+    nic = data.get("nic", "Unknown")
+    print(f"tlg_id: {tlg_id}, nic: {nic}")
+    # await callback.bot.send_message(
+    #     chat_id=EXPERT,
+    #     text=f"Has been canceled\n Name: {data['tlg_id']} Number: {data['nic']}.")
+    # await callback.bot.send_message(
+    #     chat_id=data["tlg_id"],
+    #     text=f"I do not know you")
+    # await state.clear()
 
 # # /start
 # @router.message(CommandStart())
