@@ -26,8 +26,10 @@ class CashCheck(StatesGroup):
 # /start
 @router.message(CommandStart())
 async def command_start_handler(message: Message, state: FSMContext) -> None:
+    if await db.is_user_exists(str(message.from_user.id), "banned"):
+        await message.answer("❌ You have been banned ❌")
+        return
     if not await db.is_user_exists(str(message.from_user.id), "warrior"):
-        # is banned???
         await message.answer("REGISTRATION needed.")
         await state.set_state(Register.nic)
         await message.answer("Send me your call sign (in english):")
@@ -83,25 +85,6 @@ async def add_new_warrior_to_db(callback: CallbackQuery):
     #     text=f"{data['nic']} registration done!")
     # await state.clear()
 
-
-@router.callback_query(F.data == "cancel_new_warrior")
-async def cancel_new(callback: CallbackQuery, state: FSMContext):
-    data = await state.get_data()
-
-    if not data:
-        await callback.answer("No registration data found.", show_alert=True)
-        return
-
-    tlg_id = data.get("tlg_id", "Unknown")
-    nic = data.get("nic", "Unknown")
-    print(f"tlg_id: {tlg_id}, nic: {nic}")
-    # await callback.bot.send_message(
-    #     chat_id=EXPERT,
-    #     text=f"Has been canceled\n Name: {data['tlg_id']} Number: {data['nic']}.")
-    # await callback.bot.send_message(
-    #     chat_id=data["tlg_id"],
-    #     text=f"I do not know you")
-    # await state.clear()
 
 # # /start
 # @router.message(CommandStart())
