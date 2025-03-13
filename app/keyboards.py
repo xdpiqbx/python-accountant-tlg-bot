@@ -5,12 +5,6 @@ from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 
 import app.accountant_db as db
 
-# Inline buttons
-# candidate_to_warrior = InlineKeyboardMarkup(inline_keyboard=[
-#     [InlineKeyboardButton(text="Add Warrior", callback_data="add_usr")],
-#     [InlineKeyboardButton(text="Cancel", callback_data="cancel_new_warrior")]
-# ])
-
 async def list_of_candidates():
     candidates = await db.select_all_users("candidate")
     keyboard = InlineKeyboardBuilder()
@@ -28,12 +22,10 @@ async def list_of_candidates():
             )
         )
     return keyboard.adjust(2).as_markup()
-# async def inline_cities():
-#     cities = ["Kyiv", "Brisbane", "Portland"]
-#     keyboard = InlineKeyboardBuilder()
-#     for city in cities:
-#         keyboard.add(InlineKeyboardButton(text=city, url="https://youtube.com"))
-#     return keyboard.adjust(2).as_markup()
+
+no_comment = ReplyKeyboardMarkup(keyboard=[
+    [KeyboardButton(text="No comment")]
+], resize_keyboard=True)
 
 # ============================================================================
 
