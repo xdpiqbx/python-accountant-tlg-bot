@@ -4,6 +4,8 @@ from aiogram.types import (ReplyKeyboardMarkup, KeyboardButton,
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 
 import app.accountant_db as db
+import app.utils as util
+
 
 async def list_of_candidates():
     candidates = await db.select_all_users("candidate")
@@ -23,25 +25,29 @@ async def list_of_candidates():
         )
     return keyboard.adjust(2).as_markup()
 
+
 async def main_menu():
     buttons = ["Add check", "Refund", "Your expenses", "Squad expenses", "Archive", "Statistics"]
     inline_keyboard = [[InlineKeyboardButton(text=button, callback_data=button)] for button in buttons]
     return InlineKeyboardMarkup(inline_keyboard=inline_keyboard)
 
+
 async def all_checks(checks):
     keyboard = InlineKeyboardBuilder()
     for check in checks:
+        dt = util.reformat_datetime_from_db(check[1])
         keyboard.add(
             InlineKeyboardButton(
-                text=f"{check[2]} грн - {check[1]}", callback_data=f"check:{check[0]}"
+                text=f"{check[2]} грн - {dt}", callback_data=f"check:{check[0]}"
             )
         )
         keyboard.add(
             InlineKeyboardButton(
-                text=f"📦", callback_data=f"check_to_arch:{check[0]}"
+                text=f"Send to archive", callback_data=f"check_to_arch:{check[0]}"
             )
         )
     return keyboard.adjust(2).as_markup()
+
 
 no_comment = ReplyKeyboardMarkup(keyboard=[
     [KeyboardButton(text="No comment")]

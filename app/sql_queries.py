@@ -1,11 +1,14 @@
 def select_by_tlg_id(table_name):
     return f"SELECT id, nic FROM {table_name} WHERE tlg_id = %s"
 
+
 def select_all_users(table_name):
     return f"SELECT tlg_id, nic FROM {table_name}"
 
+
 def select_balance_by_tlg_id():
     return f"SELECT balance FROM warrior WHERE tlg_id = %s"
+
 
 def select_all_checks_for_current_user():
     return (f"SELECT id, created_at, amount "
@@ -13,11 +16,19 @@ def select_all_checks_for_current_user():
             f"WHERE warrior_id = %s "
             f"ORDER BY amount DESC ")
 
+
 def select_all_checks_by_tlg_id():
     return f"SELECT id, warrior_id, created_at, amount FROM cash_check WHERE tlg_id = %s"
 
+
+def select_check_by_id():
+    return (f"SELECT image_url, created_at, amount, comment "
+            f"FROM cash_check WHERE id = %s")
+
+
 def update_balance_by_tlg_id():
     return f"UPDATE warrior SET balance = %s WHERE tlg_id = %s"
+
 
 def create_table_warrior():
     return """
@@ -29,6 +40,7 @@ def create_table_warrior():
         )
     """
 
+
 def create_table_candidate():
     return """
         CREATE TABLE IF NOT EXISTS candidate (
@@ -39,6 +51,7 @@ def create_table_candidate():
         )
     """
 
+
 def create_table_banned():
     return """
         CREATE TABLE IF NOT EXISTS banned (
@@ -48,6 +61,7 @@ def create_table_banned():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """
+
 
 def create_table_cash_check():
     return """
@@ -62,6 +76,7 @@ def create_table_cash_check():
         )
     """
 
+
 def create_table_cash_back():
     return """
         CREATE TABLE IF NOT EXISTS cash_back (
@@ -73,6 +88,7 @@ def create_table_cash_back():
             CONSTRAINT fk_warrior FOREIGN KEY (warrior_id) REFERENCES warrior (tlg_id) ON DELETE CASCADE
         )
     """
+
 
 def create_table_check_archive():
     return """
@@ -86,23 +102,27 @@ def create_table_check_archive():
         )
     """
 
+
 def insert_new_user_to_db(table_name):
     return (
-            f"INSERT INTO {table_name} (tlg_id, nic)"
-            f"VALUES (%s, %s)"
+        f"INSERT INTO {table_name} (tlg_id, nic)"
+        f"VALUES (%s, %s)"
     )
+
 
 def insert_check_to_db():
     return (
-            f"INSERT INTO cash_check (warrior_id, image_url, amount, comment)"
-            f"VALUES (%s, %s, %s, %s)"
+        f"INSERT INTO cash_check (warrior_id, image_url, amount, comment)"
+        f"VALUES (%s, %s, %s, %s)"
     )
+
 
 def insert_refund_to_db():
     return (
-            f"INSERT INTO cash_back (warrior_id, amount, comment)"
-            f"VALUES (%s, %s, %s)"
+        f"INSERT INTO cash_back (warrior_id, amount, comment)"
+        f"VALUES (%s, %s, %s)"
     )
+
 
 def delete_by_tlg_id(table_name):
     return (

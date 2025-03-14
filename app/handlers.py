@@ -32,6 +32,7 @@ class CashCheck(StatesGroup):
     amount = State()
     comment = State()
 
+
 class CashBack(StatesGroup):
     user_name = State()
     amount = State()
@@ -115,6 +116,7 @@ async def add_check(callback: CallbackQuery, state: FSMContext):
     await state.set_state(CashCheck.image_url)
     await callback.message.answer(f"Give me image of your check", reply_markup=None)
 
+
 @router.message(F.photo, CashCheck.image_url)
 async def get_check_image(message: Message, state: FSMContext):
     photo = message.photo[-1]
@@ -140,6 +142,7 @@ async def get_check_image(message: Message, state: FSMContext):
         reply_markup=None
     )
 
+
 @router.message(CashCheck.amount)
 async def get_amount(message: Message, state: FSMContext):
     value = message.text
@@ -152,6 +155,7 @@ async def get_amount(message: Message, state: FSMContext):
         "Send me any comment about this purchase or push big button 'No comments' down below.",
         reply_markup=kb.no_comment
     )
+
 
 @router.message(CashCheck.comment)
 async def get_comment_about_purchase(message: Message, state: FSMContext):
@@ -172,6 +176,7 @@ async def get_comment_about_purchase(message: Message, state: FSMContext):
         reply_markup=ReplyKeyboardRemove())
     await state.clear()
 
+
 # Refund
 @router.callback_query(F.data.startswith("Refund"))
 async def refund(callback: CallbackQuery, state: FSMContext):
@@ -187,6 +192,7 @@ async def refund(callback: CallbackQuery, state: FSMContext):
     await state.set_state(CashBack.amount)
     await callback.message.answer(f"Hello {user[1]}\nWrite down how much money you were refunded.", reply_markup=None)
 
+
 @router.message(CashBack.amount)
 async def refund_amount(message: Message, state: FSMContext):
     value = message.text
@@ -199,6 +205,7 @@ async def refund_amount(message: Message, state: FSMContext):
         "Send me any comment about this refund or push big button 'No comments' down below.",
         reply_markup=kb.no_comment
     )
+
 
 @router.message(CashBack.comment)
 async def get_comment_about_refund(message: Message, state: FSMContext):
@@ -219,6 +226,7 @@ async def get_comment_about_refund(message: Message, state: FSMContext):
         reply_markup=ReplyKeyboardRemove())
     await state.clear()
 
+
 # Your expenses
 @router.callback_query(F.data.startswith("Your expenses"))
 async def refund(callback: CallbackQuery):
@@ -234,20 +242,26 @@ async def refund(callback: CallbackQuery):
     await callback.message.answer(
         text=f"This is all your expenses for today\n"
              f"If you have already refunded the money, simply add the old entries to the archive "
-             f"by clicking the corresponding button [📦] under the receipt.",
+             f"by clicking the corresponding button.",
         reply_markup=await kb.all_checks(checks))
+
 
 @router.callback_query(F.data.startswith("check"))
 async def current_check(callback: CallbackQuery):
     check_id = tuple(callback.data.split(":")[1:])
+    # select all data about check by it's id
+    # send as message
+    # add buttons: Send to archive / Back
     print(check_id)
+
 
 @router.callback_query(F.data.startswith("check_to_arch"))
 async def check_to_arch(callback: CallbackQuery):
     check_id = tuple(callback.data.split(":")[1:])
+    # select all data about check by it's id
+    # insert to check_archive
+    # delete check from cash_check
     print(check_id)
-
-
 
 # @router.message(Command("register"))
 # async def reg_one(message: Message, state: FSMContext):
