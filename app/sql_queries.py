@@ -7,6 +7,15 @@ def select_all_users(table_name):
 def select_balance_by_tlg_id():
     return f"SELECT balance FROM warrior WHERE tlg_id = %s"
 
+def select_all_checks_for_current_user():
+    return (f"SELECT id, created_at, amount "
+            f"FROM cash_check "
+            f"WHERE warrior_id = %s "
+            f"ORDER BY amount DESC ")
+
+def select_all_checks_by_tlg_id():
+    return f"SELECT id, warrior_id, created_at, amount FROM cash_check WHERE tlg_id = %s"
+
 def update_balance_by_tlg_id():
     return f"UPDATE warrior SET balance = %s WHERE tlg_id = %s"
 

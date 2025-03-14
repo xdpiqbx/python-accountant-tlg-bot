@@ -23,6 +23,26 @@ async def list_of_candidates():
         )
     return keyboard.adjust(2).as_markup()
 
+async def main_menu():
+    buttons = ["Add check", "Refund", "Your expenses", "Squad expenses", "Archive", "Statistics"]
+    inline_keyboard = [[InlineKeyboardButton(text=button, callback_data=button)] for button in buttons]
+    return InlineKeyboardMarkup(inline_keyboard=inline_keyboard)
+
+async def all_checks(checks):
+    keyboard = InlineKeyboardBuilder()
+    for check in checks:
+        keyboard.add(
+            InlineKeyboardButton(
+                text=f"{check[2]} грн - {check[1]}", callback_data=f"check:{check[0]}"
+            )
+        )
+        keyboard.add(
+            InlineKeyboardButton(
+                text=f"📦", callback_data=f"check_to_arch:{check[0]}"
+            )
+        )
+    return keyboard.adjust(2).as_markup()
+
 no_comment = ReplyKeyboardMarkup(keyboard=[
     [KeyboardButton(text="No comment")]
 ], resize_keyboard=True)

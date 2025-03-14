@@ -15,6 +15,7 @@ https://cloudinary.com/documentation/dam_folders_collections_sharing#folder_mana
 Вам винні
 
 Commands
+start - Let's start your accountant
 add_check - So where did you spend the money?
 refund - Write down how much money you were refunded.
 
