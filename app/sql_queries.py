@@ -17,10 +17,6 @@ def select_all_checks_for_current_user():
             f"ORDER BY amount DESC ")
 
 
-def select_all_checks_by_tlg_id():
-    return f"SELECT id, warrior_id, created_at, amount FROM cash_check WHERE tlg_id = %s"
-
-
 def select_check_by_id():
     return (f"SELECT image_url, created_at, amount, comment "
             f"FROM cash_check WHERE id = %s")
@@ -36,7 +32,7 @@ def create_table_warrior():
             id SERIAL PRIMARY KEY,
             tlg_id VARCHAR(32) NOT NULL UNIQUE,
             nic VARCHAR(25) NOT NULL,
-            balance DECIMAL(10,2) NOT NULL DEFAULT 0.00
+            balance INT NOT NULL DEFAULT 0.00
         )
     """
 
@@ -70,7 +66,7 @@ def create_table_cash_check():
             warrior_id VARCHAR(32) NOT NULL,
             image_url TEXT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            amount DECIMAL(10,2) NOT NULL,
+            amount INT NOT NULL,
             comment TEXT,
             CONSTRAINT fk_warrior FOREIGN KEY (warrior_id) REFERENCES warrior (tlg_id) ON DELETE CASCADE
         )
@@ -83,7 +79,7 @@ def create_table_cash_back():
             id SERIAL PRIMARY KEY,
             warrior_id VARCHAR(32) NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            amount DECIMAL(10,2) NOT NULL,
+            amount INT NOT NULL,
             comment TEXT,
             CONSTRAINT fk_warrior FOREIGN KEY (warrior_id) REFERENCES warrior (tlg_id) ON DELETE CASCADE
         )

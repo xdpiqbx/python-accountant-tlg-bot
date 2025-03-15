@@ -32,22 +32,29 @@ async def main_menu():
     return InlineKeyboardMarkup(inline_keyboard=inline_keyboard)
 
 
-async def all_checks(checks):
+async def all_checks_with_buttons(checks):
     keyboard = InlineKeyboardBuilder()
     for check in checks:
         dt = util.reformat_datetime_from_db(check[1])
         keyboard.add(
             InlineKeyboardButton(
-                text=f"{check[2]} грн - {dt}", callback_data=f"check:{check[0]}"
+                text=f"{check[2]:,}{chr(0x2009)}{chr(0x20B4)} - {dt}".replace(',', chr(0x2009)),
+                callback_data=f"check:{check[0]}"
             )
         )
         keyboard.add(
             InlineKeyboardButton(
-                text=f"Send to archive", callback_data=f"check_to_arch:{check[0]}"
+                text=f"Send to archive", callback_data=f"arch_check:{check[0]}"
             )
         )
     return keyboard.adjust(2).as_markup()
 
+
+async def add_to_archive(check_id):
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="Send to archive", callback_data=f"arch_check:{check_id}")],
+        [InlineKeyboardButton(text="Back", callback_data=f"Your expenses")]
+    ])
 
 no_comment = ReplyKeyboardMarkup(keyboard=[
     [KeyboardButton(text="No comment")]

@@ -243,25 +243,59 @@ async def refund(callback: CallbackQuery):
         text=f"This is all your expenses for today\n"
              f"If you have already refunded the money, simply add the old entries to the archive "
              f"by clicking the corresponding button.",
-        reply_markup=await kb.all_checks(checks))
+        reply_markup=await kb.all_checks_with_buttons(checks))
 
 
 @router.callback_query(F.data.startswith("check"))
 async def current_check(callback: CallbackQuery):
+    await callback.bot.edit_message_reply_markup(
+        chat_id=callback.message.chat.id,
+        message_id=callback.message.message_id,
+        reply_markup=None
+    )
     check_id = tuple(callback.data.split(":")[1:])
-    # select all data about check by it's id
+    # select all data about check by its id
+    check_data = await db.select_check_by_id(check_id)
     # send as message
+    formatted_number = f"{check_data[2]:,}".replace(",", chr(0x2009))  # 12 897
+    formatted_date = check_data[1].strftime("%d.%m.%Y %H:%M")  # 15.03.2025 17:10
+
+    caption = (
+        f"🖼 *Check Data*\n"
+        f"📅 Date: {formatted_date}\n"
+        f"💰 Amount: {formatted_number} ₴\n"
+        f"💬 Comment: {check_data[3]}"
+    )
+    await callback.bot.send_photo(
+        callback.from_user.id,
+        photo=check_data[0],
+        caption=caption,
+        parse_mode="Markdown",
+        reply_markup=await kb.add_to_archive(check_id[0])
+    )
+
     # add buttons: Send to archive / Back
-    print(check_id)
+    # print(check_id)
 
 
-@router.callback_query(F.data.startswith("check_to_arch"))
+@router.callback_query(F.data.startswith("arch_check"))
 async def check_to_arch(callback: CallbackQuery):
     check_id = tuple(callback.data.split(":")[1:])
+    print(f"check_to_arch - {check_id}")
     # select all data about check by it's id
     # insert to check_archive
     # delete check from cash_check
-    print(check_id)
+    await callback.bot.edit_message_reply_markup(
+        chat_id=callback.message.chat.id,
+        message_id=callback.message.message_id,
+        reply_markup=None
+    )
+    checks = db.select_all_checks_for_current_user(str(callback.from_user.id))
+    await callback.message.answer(
+        text=f"This is all your expenses for today\n"
+             f"If you have already refunded the money, simply add the old entries to the archive "
+             f"by clicking the corresponding button.",
+        reply_markup=await kb.all_checks_with_buttons(checks))
 
 # @router.message(Command("register"))
 # async def reg_one(message: Message, state: FSMContext):
