@@ -2,17 +2,21 @@ def select_by_tlg_id(table_name):
     return f"SELECT id, nic FROM {table_name} WHERE tlg_id = %s"
 
 
-def select_all_users(table_name):
-    return f"SELECT tlg_id, nic FROM {table_name}"
+def select_all_warriors():
+    return f"SELECT tlg_id, nic, balance FROM warrior WHERE balance > 0 ORDER BY balance DESC"
+
+
+def select_all_candidates():
+    return f"SELECT tlg_id, nic FROM candidate"
 
 
 def select_balance_by_tlg_id():
     return f"SELECT balance FROM warrior WHERE tlg_id = %s"
 
 
-def select_all_checks_for_current_user():
+def select_all_checks_for_current_user(table_name):
     return (f"SELECT id, created_at, amount "
-            f"FROM cash_check "
+            f"FROM {table_name} "
             f"WHERE warrior_id = %s "
             f"ORDER BY amount DESC ")
 
@@ -20,6 +24,15 @@ def select_all_checks_for_current_user():
 def select_check_by_id():
     return (f"SELECT warrior_id, image_url, created_at, amount, comment "
             f"FROM cash_check WHERE id = %s")
+
+
+def select_arch_check_by_id():
+    return (f"SELECT warrior_id, image_url, created_at, amount, comment, added_to_archive "
+            f"FROM check_archive WHERE id = %s")
+
+
+def select_sum_balance():
+    return "SELECT SUM(balance) AS total_balance FROM warrior;"
 
 
 def update_balance_by_tlg_id():

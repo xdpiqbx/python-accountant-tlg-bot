@@ -16,12 +16,6 @@ add_check - So where did you spend the money?
 refund - Write down how much money you were refunded.
 
 TODO:
-"Squad expenses"
-get list of all warriors like inline buttons with they balance (sort by max balance)
-    name - balance
-    Press button (name - balance) and you get name with balance on top and
-        all checks with data-amount like inline buttons
-
 add button statistics
     2 messages:
         1 personal stat
@@ -37,3 +31,6 @@ add button statistics
 watch my archive
     sort by date
     sort by amount
+
+
+Start from - 362 @router.callback_query(F.data.startswith("check_data_for_current"))

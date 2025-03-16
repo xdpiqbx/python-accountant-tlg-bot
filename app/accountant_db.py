@@ -130,11 +130,22 @@ async def select_user_by_tlg_id(tlg_id):
         print("Error inserting data:", e)
 
 
-async def select_all_users(table_name):
+async def select_all_warriors():
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
-                cursor.execute(sql_query.select_all_users(table_name))
+                cursor.execute(sql_query.select_all_warriors())
+                result = cursor.fetchall()
+                return result
+    except Exception as e:
+        print("Error inserting data:", e)
+
+
+async def select_all_candidates():
+    try:
+        with psycopg2.connect(**db_params) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_query.select_all_candidates())
                 result = cursor.fetchall()
                 return result
     except Exception as e:
@@ -152,11 +163,11 @@ async def select_balance_by_tlg_id(tlg_id):
         print("Error inserting data:", e)
 
 
-async def select_all_checks_for_current_user(tlg_id):
+async def select_all_checks_for_current_user(tlg_id, table_name):
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
-                cursor.execute(sql_query.select_all_checks_for_current_user(), (tlg_id,))
+                cursor.execute(sql_query.select_all_checks_for_current_user(table_name), (tlg_id,))
                 result = cursor.fetchall()
                 return result
     except Exception as e:
@@ -174,6 +185,17 @@ async def select_check_by_id(check_id):
         print("Error inserting data:", e)
 
 
+async def select_arch_check_by_id(check_id):
+    try:
+        with psycopg2.connect(**db_params) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_query.select_arch_check_by_id(), (check_id,))
+                result = cursor.fetchone()
+                return result
+    except Exception as e:
+        print("Error inserting data:", e)
+
+
 async def update_balance_by_tlg_id(balance, tlg_id):
     try:
         with psycopg2.connect(**db_params) as conn:
@@ -181,6 +203,17 @@ async def update_balance_by_tlg_id(balance, tlg_id):
                 cursor.execute(sql_query.update_balance_by_tlg_id(), (balance, tlg_id,))
                 conn.commit()
                 print("Balance updated successfully!")
+    except Exception as e:
+        print("Error inserting data:", e)
+
+
+async def select_sum_balance():
+    try:
+        with psycopg2.connect(**db_params) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_query.select_sum_balance())
+                result = cursor.fetchone()
+                return result[0] if result and result[0] is not None else 0
     except Exception as e:
         print("Error inserting data:", e)
 

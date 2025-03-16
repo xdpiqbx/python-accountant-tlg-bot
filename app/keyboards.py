@@ -8,7 +8,7 @@ import app.utils as util
 
 
 async def list_of_candidates():
-    candidates = await db.select_all_users("candidate")
+    candidates = await db.select_all_candidates()
     keyboard = InlineKeyboardBuilder()
     for candidate in candidates:
         keyboard.add(
@@ -26,6 +26,43 @@ async def list_of_candidates():
     return keyboard.adjust(2).as_markup()
 
 
+async def list_of_warriors(users):
+    keyboard = InlineKeyboardBuilder()
+    for user in users:
+        amount_formatted = f"{user[2]:,}{chr(0x2009)}{chr(0x20B4)}".replace(',', chr(0x2009))
+        keyboard.add(
+            InlineKeyboardButton(
+                text=f"{user[1]} - {amount_formatted}",
+                callback_data=f"user_expenses:{user[0]}:{user[1]}"
+            )
+        )
+    keyboard.add(
+        InlineKeyboardButton(
+            text=f"Back",
+            callback_data=f"back_to_main"
+        )
+    )
+    return keyboard.adjust(1).as_markup()
+
+
+async def list_of_warriors_archived_checks(users):
+    keyboard = InlineKeyboardBuilder()
+    for user in users:
+        keyboard.add(
+            InlineKeyboardButton(
+                text=user[1],
+                callback_data=f"user_archive:{user[0]}:{user[1]}"
+            )
+        )
+    keyboard.add(
+        InlineKeyboardButton(
+            text=f"Back",
+            callback_data=f"back_to_main"
+        )
+    )
+    return keyboard.adjust(1).as_markup()
+
+
 async def main_menu():
     buttons = ["Add check", "Refund", "Your expenses", "Squad expenses", "Archive", "Statistics"]
     inline_keyboard = [[InlineKeyboardButton(text=button, callback_data=button)] for button in buttons]
@@ -39,7 +76,7 @@ async def all_checks_with_buttons(checks):
         keyboard.add(
             InlineKeyboardButton(
                 text=f"{check[2]:,}{chr(0x2009)}{chr(0x20B4)} - {dt}".replace(',', chr(0x2009)),
-                callback_data=f"check:{check[0]}"
+                callback_data=f"check_data_for_my_exp:{check[0]}"
             )
         )
         keyboard.add(
@@ -47,7 +84,54 @@ async def all_checks_with_buttons(checks):
                 text=f"Send to archive", callback_data=f"arch_check:{check[0]}"
             )
         )
+    keyboard.add(
+        InlineKeyboardButton(
+            text=f"Back", callback_data="back_to_main"
+        )
+    )
     return keyboard.adjust(2).as_markup()
+
+
+async def all_checks_with_buttons_for_current_from_sqad_exp(checks):
+    keyboard = InlineKeyboardBuilder()
+    for check in checks:
+        dt = util.reformat_datetime_from_db(check[1])
+        keyboard.add(
+            InlineKeyboardButton(
+                text=f"{check[2]:,}{chr(0x2009)}{chr(0x20B4)} - {dt}".replace(',', chr(0x2009)),
+                callback_data=f"check_data_for_current:{check[0]}"
+            )
+        )
+        keyboard.add(
+            InlineKeyboardButton(
+                text=f"Send to archive", callback_data=f"arch_check:{check[0]}"
+            )
+        )
+    keyboard.add(
+        InlineKeyboardButton(
+            text=f"Back", callback_data="Squad expenses"
+        )
+    )
+    return keyboard.adjust(2).as_markup()
+
+
+async def all_archived_checks(checks, name):
+    keyboard = InlineKeyboardBuilder()
+    for check in checks:
+        print(f"all_archived_checks {check}")
+        dt = util.reformat_datetime_from_db(check[1])
+        keyboard.add(
+            InlineKeyboardButton(
+                text=f"{check[2]:,}{chr(0x2009)}{chr(0x20B4)} - {dt}".replace(',', chr(0x2009)),
+                callback_data=f"check_from_archive:{check[0]}:{name}"
+            )
+        )
+    keyboard.add(
+        InlineKeyboardButton(
+            text=f"Back", callback_data="Archive"
+        )
+    )
+    return keyboard.adjust(1).as_markup()
 
 
 async def add_to_archive(check_id):
@@ -55,6 +139,25 @@ async def add_to_archive(check_id):
         [InlineKeyboardButton(text="Send to archive", callback_data=f"arch_check:{check_id}")],
         [InlineKeyboardButton(text="Back", callback_data=f"Your expenses")]
     ])
+
+
+async def call_squad_expenses():
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="Back", callback_data=f"Squad expenses")]
+    ])
+
+
+async def call_your_expenses():
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="Back", callback_data=f"Your expenses")]
+    ])
+
+
+async def back_to_user_archive(callback_data):
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="Back", callback_data=callback_data)]
+    ])
+
 
 no_comment = ReplyKeyboardMarkup(keyboard=[
     [KeyboardButton(text="No comment")]
