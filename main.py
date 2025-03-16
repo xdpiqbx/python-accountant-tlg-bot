@@ -8,11 +8,13 @@ from aiogram.enums import ParseMode
 
 from app.handlers import router
 from env_variables import TOKEN
+from app.accountant_db import start_db
 
 dp = Dispatcher()
 
 
 async def main() -> None:
+    await start_db()
     dp.include_router(router)
     # Initialize Bot instance with default bot properties which will be passed to all API calls
     bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))

@@ -6,7 +6,7 @@ import app.sql_queries as sql_query
 from env_variables import expert_data_to_insert
 
 
-def is_connected():
+async def is_connected():
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
@@ -17,7 +17,7 @@ def is_connected():
         return False
 
 
-def create_tables():
+async def create_tables():
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
@@ -33,7 +33,7 @@ def create_tables():
         print("Error while creating tables:", e)
 
 
-def insert_expert():
+async def insert_expert():
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
@@ -44,7 +44,7 @@ def insert_expert():
         print("Error inserting data:", e)
 
 
-def insert_new_user(table_name, data):
+async def insert_new_user(table_name, data):
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
@@ -55,7 +55,7 @@ def insert_new_user(table_name, data):
         print("Error inserting data:", e)
 
 
-def insert_check(data):
+async def insert_check(data):
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
@@ -66,7 +66,18 @@ def insert_check(data):
         print("Error inserting data:", e)
 
 
-def insert_refund(data):
+async def insert_check_to_archive(data):
+    try:
+        with psycopg2.connect(**db_params) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_query.insert_check_to_archive(), data)
+                conn.commit()
+                print("Check was archived.")
+    except Exception as e:
+        print("Error inserting data:", e)
+
+
+async def insert_refund(data):
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
@@ -77,11 +88,21 @@ def insert_refund(data):
         print("Error inserting data:", e)
 
 
-def delete_from_db_by_tlg_id(table_name, data):
+async def delete_from_db_by_tlg_id(table_name, data):
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
                 cursor.execute(sql_query.delete_by_tlg_id(table_name), (data,))
+                conn.commit()
+    except Exception as e:
+        print("Error inserting data:", e)
+
+
+async def delete_check_from_cash_check_by_id(check_id):
+    try:
+        with psycopg2.connect(**db_params) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_query.delete_check_from_cash_check_by_id(), check_id)
                 conn.commit()
     except Exception as e:
         print("Error inserting data:", e)
@@ -120,7 +141,7 @@ async def select_all_users(table_name):
         print("Error inserting data:", e)
 
 
-def select_balance_by_tlg_id(tlg_id):
+async def select_balance_by_tlg_id(tlg_id):
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
@@ -131,7 +152,7 @@ def select_balance_by_tlg_id(tlg_id):
         print("Error inserting data:", e)
 
 
-def select_all_checks_for_current_user(tlg_id):
+async def select_all_checks_for_current_user(tlg_id):
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
@@ -153,7 +174,7 @@ async def select_check_by_id(check_id):
         print("Error inserting data:", e)
 
 
-def update_balance_by_tlg_id(balance, tlg_id):
+async def update_balance_by_tlg_id(balance, tlg_id):
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
@@ -164,9 +185,10 @@ def update_balance_by_tlg_id(balance, tlg_id):
         print("Error inserting data:", e)
 
 
-if is_connected():
-    # create_tables()
-    # insert_expert()
-    print("Connected.")
-else:
-    print("Not connected to the database.")
+async def start_db():
+    if await is_connected():
+        # await create_tables()
+        # await insert_expert()
+        print("Connected.")
+    else:
+        print("Not connected to the database.")

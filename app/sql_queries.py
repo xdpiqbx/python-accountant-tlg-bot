@@ -18,7 +18,7 @@ def select_all_checks_for_current_user():
 
 
 def select_check_by_id():
-    return (f"SELECT image_url, created_at, amount, comment "
+    return (f"SELECT warrior_id, image_url, created_at, amount, comment "
             f"FROM cash_check WHERE id = %s")
 
 
@@ -93,6 +93,8 @@ def create_table_check_archive():
             warrior_id VARCHAR(32) NOT NULL,
             image_url TEXT,
             created_at TIMESTAMP,
+            amount INT NOT NULL,
+            comment TEXT,
             added_to_archive TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             CONSTRAINT fk_warrior FOREIGN KEY (warrior_id) REFERENCES warrior (tlg_id) ON DELETE SET NULL
         )
@@ -113,6 +115,13 @@ def insert_check_to_db():
     )
 
 
+def insert_check_to_archive():
+    return (
+        f"INSERT INTO check_archive (warrior_id, image_url, created_at, amount, comment)"
+        f"VALUES (%s, %s, %s, %s, %s)"
+    )
+
+
 def insert_refund_to_db():
     return (
         f"INSERT INTO cash_back (warrior_id, amount, comment)"
@@ -123,4 +132,10 @@ def insert_refund_to_db():
 def delete_by_tlg_id(table_name):
     return (
         f"DELETE FROM {table_name} WHERE tlg_id = %s;"
+    )
+
+
+def delete_check_from_cash_check_by_id():
+    return (
+        f"DELETE FROM cash_check WHERE id = %s;"
     )

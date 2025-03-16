@@ -16,8 +16,6 @@ add_check - So where did you spend the money?
 refund - Write down how much money you were refunded.
 
 TODO:
-"add to archive"
-
 "Squad expenses"
 get list of all warriors like inline buttons with they balance (sort by max balance)
     name - balance
