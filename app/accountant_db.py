@@ -141,6 +141,17 @@ async def select_all_warriors():
         print("Error inserting data:", e)
 
 
+async def select_warriors_who_have_checks_in_archive():
+    try:
+        with psycopg2.connect(**db_params) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_query.select_warriors_who_have_checks_in_archive())
+                result = cursor.fetchall()
+                return result
+    except Exception as e:
+        print("Error inserting data:", e)
+
+
 async def select_all_candidates():
     try:
         with psycopg2.connect(**db_params) as conn:
@@ -220,7 +231,7 @@ async def select_sum_balance():
 
 async def start_db():
     if await is_connected():
-        # await create_tables()
+        await create_tables()
         # await insert_expert()
         print("Connected.")
     else:

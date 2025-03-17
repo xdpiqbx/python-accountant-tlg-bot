@@ -9,3 +9,6 @@ def reformat_datetime_from_db(dt):
     # Format the datetime object into the desired format
     # return dt_obj.strftime("%d.%m.%Y %H:%M")
     return dt_obj.strftime("%d.%m.%Y")
+
+def hryvna_format(amount):
+    return f"{int(amount):,}{chr(0x2009)}{chr(0x20B4)}".replace(',', chr(0x2009))

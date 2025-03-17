@@ -29,10 +29,9 @@ async def list_of_candidates():
 async def list_of_warriors(users):
     keyboard = InlineKeyboardBuilder()
     for user in users:
-        amount_formatted = f"{user[2]:,}{chr(0x2009)}{chr(0x20B4)}".replace(',', chr(0x2009))
         keyboard.add(
             InlineKeyboardButton(
-                text=f"{user[1]} - {amount_formatted}",
+                text=f"{user[1]} - {util.hryvna_format(user[2])}",
                 callback_data=f"user_expenses:{user[0]}:{user[1]}"
             )
         )
@@ -75,7 +74,7 @@ async def all_checks_with_buttons(checks):
         dt = util.reformat_datetime_from_db(check[1])
         keyboard.add(
             InlineKeyboardButton(
-                text=f"{check[2]:,}{chr(0x2009)}{chr(0x20B4)} - {dt}".replace(',', chr(0x2009)),
+                text=f"{util.hryvna_format(check[2])} - {dt}",
                 callback_data=f"check_data_for_my_exp:{check[0]}"
             )
         )
@@ -98,7 +97,7 @@ async def all_checks_with_buttons_for_current_from_sqad_exp(checks, tlg_id, name
         dt = util.reformat_datetime_from_db(check[1])
         keyboard.add(
             InlineKeyboardButton(
-                text=f"{check[2]:,}{chr(0x2009)}{chr(0x20B4)} - {dt}".replace(',', chr(0x2009)),
+                text=f"{util.hryvna_format(check[2])} - {dt}",
                 callback_data=f"check_data_for_current:{check[0]}:{tlg_id}:{name}"
             )
         )
@@ -122,7 +121,7 @@ async def all_archived_checks(checks, name):
         dt = util.reformat_datetime_from_db(check[1])
         keyboard.add(
             InlineKeyboardButton(
-                text=f"{check[2]:,}{chr(0x2009)}{chr(0x20B4)} - {dt}".replace(',', chr(0x2009)),
+                text=f"{util.hryvna_format(check[2])} - {dt}",
                 callback_data=f"check_from_archive:{check[0]}:{name}"
             )
         )

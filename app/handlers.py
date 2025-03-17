@@ -8,6 +8,7 @@ from aiogram.fsm.context import FSMContext
 
 import app.keyboards as kb
 import app.accountant_db as db
+import app.utils as util
 
 from env_variables import EXPERT, TOKEN, cloudinary_config, CLOUDINARY_FOLDER
 
@@ -42,6 +43,7 @@ class CashBack(StatesGroup):
 # /start
 @router.message(CommandStart())
 async def command_start_handler(message: Message, state: FSMContext) -> None:
+    await state.clear()
     tlg_id = str(message.from_user.id)
     if await db.is_user_exists(tlg_id, "banned"):
         await message.answer("❌ You have been banned ❌")
@@ -52,7 +54,7 @@ async def command_start_handler(message: Message, state: FSMContext) -> None:
         await message.answer("Send me your call sign (in english):", reply_markup=None)
     else:
         user = await db.select_user_by_tlg_id(tlg_id)
-        await message.answer(f"Hi, {user[1]} what we do?\n"
+        await message.answer(f"Hi, {user[2]} what we do?\n"
                              f"(chose the option down below)",
                              reply_markup=await kb.main_menu())
 
@@ -115,7 +117,7 @@ async def add_check(callback: CallbackQuery, state: FSMContext):
         message_id=callback.message.message_id,
         reply_markup=None
     )
-    await state.update_data(user_name=user[1])
+    await state.update_data(user_name=user[2])
     await state.set_state(CashCheck.image_url)
     await callback.message.answer(f"Give me image of your check", reply_markup=None)
 
@@ -191,14 +193,19 @@ async def refund(callback: CallbackQuery, state: FSMContext):
     if await db.is_user_exists(str(callback.from_user.id), "banned"):
         await callback.message.answer("❌ You have been banned ❌", reply_markup=None)
         return
-    user = await db.select_user_by_tlg_id(str(callback.from_user.id))
+    [_, _, nic, balance] = await db.select_user_by_tlg_id(str(callback.from_user.id))
     await callback.bot.edit_message_reply_markup(
         chat_id=callback.message.chat.id,
         message_id=callback.message.message_id,
         reply_markup=None
     )
     await state.set_state(CashBack.amount)
-    await callback.message.answer(f"Hello {user[1]}\nWrite down how much money you were refunded.", reply_markup=None)
+    await callback.message.answer(
+        f"Hello {nic}\n"
+        f"Your current balance is: {util.hryvna_format(balance)}\n"
+        f"Write down how much money you were refunded.",
+        reply_markup=None
+    )
 
 
 @router.message(CashBack.amount)
@@ -401,6 +408,8 @@ async def back_to_main_menu(callback: CallbackQuery):
         text=f"Hi, what we do?\n(chose the option down below)",
         reply_markup=await kb.main_menu()
     )
+# ===================================================================================================================
+# Squad expenses - DONE
 
 
 # Archive
@@ -411,7 +420,7 @@ async def archive(callback: CallbackQuery):
         message_id=callback.message.message_id,
         reply_markup=None
     )
-    users = await db.select_all_warriors()
+    users = await db.select_warriors_who_have_checks_in_archive()
     await callback.bot.send_message(
         chat_id=callback.from_user.id,
         text=f"List of users who have already archived their expenses.\n"

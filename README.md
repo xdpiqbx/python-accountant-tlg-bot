@@ -16,6 +16,8 @@ add_check - So where did you spend the money?
 refund - Write down how much money you were refunded.
 
 TODO:
+All images store on Synology NAS
+
 add button statistics
     2 messages:
         1 personal stat
@@ -27,10 +29,6 @@ add button statistics
             The total debt to us: 200 грн
             We spent for the entire time: 2400 грн
             Total refunded for the entire time: 2200 грн
-
-watch my archive
-    sort by date
-    sort by amount
 
 
 Start from - 362 @router.callback_query(F.data.startswith("check_data_for_current"))

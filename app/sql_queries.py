@@ -1,9 +1,15 @@
 def select_by_tlg_id(table_name):
-    return f"SELECT id, nic FROM {table_name} WHERE tlg_id = %s"
+    return f"SELECT * FROM {table_name} WHERE tlg_id = %s"
 
 
 def select_all_warriors():
     return f"SELECT tlg_id, nic, balance FROM warrior WHERE balance > 0 ORDER BY balance DESC"
+
+
+def select_warriors_who_have_checks_in_archive():
+    return (f"SELECT DISTINCT w.tlg_id, w.nic "
+            f"FROM warrior w "
+            f"JOIN check_archive c ON w.tlg_id = c.warrior_id;")
 
 
 def select_all_candidates():
@@ -18,7 +24,7 @@ def select_all_checks_for_current_user(table_name):
     return (f"SELECT id, created_at, amount "
             f"FROM {table_name} "
             f"WHERE warrior_id = %s "
-            f"ORDER BY amount DESC ")
+            f"ORDER BY amount DESC")
 
 
 def select_check_by_id():
@@ -45,7 +51,7 @@ def create_table_warrior():
             id SERIAL PRIMARY KEY,
             tlg_id VARCHAR(32) NOT NULL UNIQUE,
             nic VARCHAR(25) NOT NULL,
-            balance INT NOT NULL DEFAULT 0.00
+            balance INT NOT NULL DEFAULT 0
         )
     """
 
