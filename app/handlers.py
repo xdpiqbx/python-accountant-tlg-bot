@@ -174,6 +174,7 @@ async def get_comment_about_purchase(message: Message, state: FSMContext):
     new_balance = current_balance + int(data['amount'])
     # update balance
     await db.update_balance_by_tlg_id(new_balance, tlg_id)
+    await message.answer("Check data saved 💾", reply_markup=ReplyKeyboardRemove())
     await message.answer(
         f"Your balance has been increased.\nCurrent balance: {new_balance}",
         reply_markup=await kb.main_menu())
@@ -355,18 +356,18 @@ async def user_expenses(callback: CallbackQuery):
 
     await callback.message.answer(
         text=f"This is all {name} expenses",
-        reply_markup=await kb.all_checks_with_buttons_for_current_from_sqad_exp(checks)
+        reply_markup=await kb.all_checks_with_buttons_for_current_from_sqad_exp(checks, tlg_id, name)
     )
 
 
 @router.callback_query(F.data.startswith("check_data_for_current"))
 async def current_check(callback: CallbackQuery):
+    [check_id, tlg_id, name] = callback.data.split(":")[1:]
     await callback.bot.edit_message_reply_markup(
         chat_id=callback.message.chat.id,
         message_id=callback.message.message_id,
         reply_markup=None
     )
-    check_id = tuple(callback.data.split(":")[1:])
     # select all data about check by its id
     check_data = await db.select_check_by_id(check_id)  # warrior_id, image_url, created_at, amount, comment
     # send as message
@@ -384,7 +385,7 @@ async def current_check(callback: CallbackQuery):
         photo=check_data[1],
         caption=caption,
         parse_mode="Markdown",
-        reply_markup=await kb.add_to_archive(check_id[0])
+        reply_markup=await kb.squad_exp_user_checks(check_id, tlg_id, name)
     )
 
 

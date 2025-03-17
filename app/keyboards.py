@@ -92,14 +92,14 @@ async def all_checks_with_buttons(checks):
     return keyboard.adjust(2).as_markup()
 
 
-async def all_checks_with_buttons_for_current_from_sqad_exp(checks):
+async def all_checks_with_buttons_for_current_from_sqad_exp(checks, tlg_id, name):
     keyboard = InlineKeyboardBuilder()
     for check in checks:
         dt = util.reformat_datetime_from_db(check[1])
         keyboard.add(
             InlineKeyboardButton(
                 text=f"{check[2]:,}{chr(0x2009)}{chr(0x20B4)} - {dt}".replace(',', chr(0x2009)),
-                callback_data=f"check_data_for_current:{check[0]}"
+                callback_data=f"check_data_for_current:{check[0]}:{tlg_id}:{name}"
             )
         )
         keyboard.add(
@@ -138,6 +138,14 @@ async def add_to_archive(check_id):
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="Send to archive", callback_data=f"arch_check:{check_id}")],
         [InlineKeyboardButton(text="Back", callback_data=f"Your expenses")]
+    ])
+
+
+async def squad_exp_user_checks(check_id, tlg_id, name):
+    print(f"squad_exp_user_checks {check_id}, {tlg_id}, {name}")
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="Send to archive", callback_data=f"arch_check:{check_id}")],
+        [InlineKeyboardButton(text="Back", callback_data=f"user_expenses:{tlg_id}:{name}")]
     ])
 
 
