@@ -91,7 +91,7 @@ async def all_checks_with_buttons(checks):
     return keyboard.adjust(2).as_markup()
 
 
-async def all_checks_with_buttons_for_current_from_sqad_exp(checks, tlg_id, name):
+async def all_checks_with_buttons_for_current_from_sqad_exp(checks, tlg_id, name, to_show_arch_button):
     keyboard = InlineKeyboardBuilder()
     for check in checks:
         dt = util.reformat_datetime_from_db(check[1])
@@ -101,23 +101,23 @@ async def all_checks_with_buttons_for_current_from_sqad_exp(checks, tlg_id, name
                 callback_data=f"check_data_for_current:{check[0]}:{tlg_id}:{name}"
             )
         )
-        keyboard.add(
-            InlineKeyboardButton(
-                text=f"Send to archive", callback_data=f"arch_check:{check[0]}"
+        if to_show_arch_button:
+            keyboard.add(
+                InlineKeyboardButton(
+                    text=f"Send to archive", callback_data=f"arch_check:{check[0]}"
+                )
             )
-        )
     keyboard.add(
         InlineKeyboardButton(
             text=f"Back", callback_data="Squad expenses"
         )
     )
-    return keyboard.adjust(2).as_markup()
+    return keyboard.adjust(2 if to_show_arch_button else 1).as_markup()
 
 
 async def all_archived_checks(checks, name):
     keyboard = InlineKeyboardBuilder()
     for check in checks:
-        print(f"all_archived_checks {check}")
         dt = util.reformat_datetime_from_db(check[1])
         keyboard.add(
             InlineKeyboardButton(
@@ -140,10 +140,13 @@ async def add_to_archive(check_id):
     ])
 
 
-async def squad_exp_user_checks(check_id, tlg_id, name):
-    print(f"squad_exp_user_checks {check_id}, {tlg_id}, {name}")
+async def squad_exp_user_checks(check_id, tlg_id, name, to_show_arch_button):
+    if to_show_arch_button:
+        return InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="Send to archive", callback_data=f"arch_check:{check_id}")],
+            [InlineKeyboardButton(text="Back", callback_data=f"user_expenses:{tlg_id}:{name}")]
+        ])
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="Send to archive", callback_data=f"arch_check:{check_id}")],
         [InlineKeyboardButton(text="Back", callback_data=f"user_expenses:{tlg_id}:{name}")]
     ])
 

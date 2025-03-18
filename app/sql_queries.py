@@ -41,6 +41,10 @@ def select_sum_balance():
     return "SELECT SUM(balance) AS total_balance FROM warrior;"
 
 
+def select_total_refund():
+    return "SELECT SUM(amount) AS total_refund FROM cash_back;"
+
+
 def update_balance_by_tlg_id():
     return f"UPDATE warrior SET balance = %s WHERE tlg_id = %s"
 

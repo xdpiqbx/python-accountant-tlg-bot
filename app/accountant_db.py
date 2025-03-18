@@ -169,7 +169,7 @@ async def select_balance_by_tlg_id(tlg_id):
             with conn.cursor() as cursor:
                 cursor.execute(sql_query.select_balance_by_tlg_id(), (tlg_id,))
                 result = cursor.fetchone()
-                return int(result[0])
+                return result[0]
     except Exception as e:
         print("Error inserting data:", e)
 
@@ -223,6 +223,17 @@ async def select_sum_balance():
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
                 cursor.execute(sql_query.select_sum_balance())
+                result = cursor.fetchone()
+                return result[0] if result and result[0] is not None else 0
+    except Exception as e:
+        print("Error inserting data:", e)
+
+
+async def select_total_sum_refund():
+    try:
+        with psycopg2.connect(**db_params) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_query.select_total_refund())
                 result = cursor.fetchone()
                 return result[0] if result and result[0] is not None else 0
     except Exception as e:
