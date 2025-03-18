@@ -1,9 +1,21 @@
-from env_variables import db_params
+import os
+
 import psycopg2
-
 import app.sql_queries as sql_query
+from dotenv import load_dotenv
 
-from env_variables import expert_data_to_insert
+load_dotenv()
+
+
+db_params = {
+    "dbname": os.getenv("DB_NAME"),
+    "user": os.getenv("DB_USER"),
+    "password": os.getenv("DB_PASSWORD"),
+    "host": os.getenv("DB_HOST"),
+    "port": os.getenv("DB_PORT")
+}
+
+print(db_params)
 
 
 async def is_connected():
@@ -37,7 +49,10 @@ async def insert_expert():
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
-                cursor.execute(sql_query.insert_new_user_to_db("warrior"), expert_data_to_insert)
+                cursor.execute(
+                    sql_query.insert_new_user_to_db("warrior"),
+                    (os.getenv("EXPERT_TLG_ID"), os.getenv("EXPERT_NIC"))
+                )
                 conn.commit()
                 print("Expert inserted successfully!")
     except Exception as e:
@@ -243,7 +258,7 @@ async def select_total_sum_refund():
 async def start_db():
     if await is_connected():
         await create_tables()
-        # await insert_expert()
+        await insert_expert()
         print("Connected.")
     else:
         print("Not connected to the database.")

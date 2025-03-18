@@ -16,7 +16,7 @@ import app.keyboards as kb
 import app.accountant_db as db
 import app.utils as util
 
-from env_variables import EXPERT, TOKEN, destination_path, cloudinary_config, CLOUDINARY_FOLDER
+from env_variables import EXPERT, TOKEN, destination_path  # , cloudinary_config, CLOUDINARY_FOLDER
 
 # Cloudinary
 import cloudinary
