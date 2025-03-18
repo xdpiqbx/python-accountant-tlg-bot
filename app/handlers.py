@@ -1,8 +1,14 @@
 from datetime import datetime
 
+import aiohttp
+import aiofiles
+
+import os
+
 from aiogram import Router, html, F
 from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
+from aiogram.types.input_file import FSInputFile
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
 
@@ -10,7 +16,7 @@ import app.keyboards as kb
 import app.accountant_db as db
 import app.utils as util
 
-from env_variables import EXPERT, TOKEN, cloudinary_config, CLOUDINARY_FOLDER
+from env_variables import EXPERT, TOKEN, destination_path, cloudinary_config, CLOUDINARY_FOLDER
 
 # Cloudinary
 import cloudinary
@@ -128,24 +134,53 @@ async def get_check_image(message: Message, state: FSMContext):
     photo_file = await message.bot.get_file(photo.file_id)
     file_path = f"https://api.telegram.org/file/bot{TOKEN}/{photo_file.file_path}"
     data = await state.get_data()
-    formatted_time = datetime.now().strftime("%d.%m.%Y_%H:%M:%S")
+    formatted_time = datetime.now().strftime("%d.%m.%Y_%H-%M-%S")
+    print(data)
 
-    config = cloudinary.config(secure=True)
-    config.cloud_name = cloudinary_config["cloud_name"]
-    config.api_key = cloudinary_config["api_key"]
-    config.api_secret = cloudinary_config["api_secret"]
+    parent_dir = os.path.abspath(os.path.join(os.getcwd(), ".."))
+    user_folder = f"{data['user_name']}"
+    os.makedirs(os.path.join(parent_dir, destination_path, user_folder), exist_ok=True)
+    file_name = f"{data['user_name']}_{formatted_time}.jpg"
+    file_to_save = os.path.join(parent_dir, destination_path, user_folder, file_name)
+    print(file_to_save)
 
-    uploaded_image = cloudinary.uploader.upload(
-        file_path,
-        asset_folder=f"{CLOUDINARY_FOLDER}/{data['user_name']}",
-        public_id=f"{data['user_name']}_[{formatted_time}]"
-    )
-    await state.update_data(image_url=uploaded_image['secure_url'])
+    async with aiohttp.ClientSession() as session:
+        async with session.get(file_path) as resp:
+            if resp.status == 200:
+                async with aiofiles.open(file_to_save, "wb") as f:
+                    await f.write(await resp.read())
+
+    await state.update_data(image_url=file_to_save)
     await state.set_state(CashCheck.amount)
     await message.answer(
         "How much did you spend?\nGive me a whole number without a penny (round it).",
         reply_markup=None
     )
+
+# @router.message(F.photo, CashCheck.image_url)
+# async def get_check_image(message: Message, state: FSMContext):
+#     photo = message.photo[-1]
+#     photo_file = await message.bot.get_file(photo.file_id)
+#     file_path = f"https://api.telegram.org/file/bot{TOKEN}/{photo_file.file_path}"
+#     data = await state.get_data()
+#     formatted_time = datetime.now().strftime("%d.%m.%Y_%H:%M:%S")
+#
+#     config = cloudinary.config(secure=True)
+#     config.cloud_name = cloudinary_config["cloud_name"]
+#     config.api_key = cloudinary_config["api_key"]
+#     config.api_secret = cloudinary_config["api_secret"]
+#
+#     uploaded_image = cloudinary.uploader.upload(
+#         file_path,
+#         asset_folder=f"{CLOUDINARY_FOLDER}/{data['user_name']}",
+#         public_id=f"{data['user_name']}_[{formatted_time}]"
+#     )
+#     await state.update_data(image_url=uploaded_image['secure_url'])
+#     await state.set_state(CashCheck.amount)
+#     await message.answer(
+#         "How much did you spend?\nGive me a whole number without a penny (round it).",
+#         reply_markup=None
+#     )
 
 
 @router.message(CashCheck.amount)
@@ -281,8 +316,8 @@ async def current_check(callback: CallbackQuery):
     check_data = await db.select_check_by_id(check_id)  # warrior_id, image_url, created_at, amount, comment
     # send as message
     formatted_number = f"{check_data[3]:,}".replace(",", chr(0x2009))  # 12 897
-    formatted_date = check_data[2].strftime("%d.%m.%Y %H:%M")  # 15.03.2025 17:10
-
+    formatted_date = check_data[2].strftime("%d.%m.%Y %H:%M")  # 15.03.2025 17-10
+    print(check_data[1])
     caption = (
         f"🖼 *Check Data*\n"
         f"📅 Date: {formatted_date}\n"
@@ -291,7 +326,7 @@ async def current_check(callback: CallbackQuery):
     )
     await callback.bot.send_photo(
         callback.from_user.id,
-        photo=check_data[1],
+        photo=FSInputFile(check_data[1]),
         caption=caption,
         parse_mode="Markdown",
         reply_markup=await kb.add_to_archive(check_id[0])
@@ -389,7 +424,7 @@ async def current_check(callback: CallbackQuery):
     )
     await callback.bot.send_photo(
         callback.from_user.id,
-        photo=check_data[1],
+        photo=FSInputFile(check_data[1]),
         caption=caption,
         parse_mode="Markdown",
         reply_markup=await kb.squad_exp_user_checks(check_id, tlg_id, name)
@@ -469,7 +504,7 @@ async def current_arch_check(callback: CallbackQuery):
     )
     await callback.bot.send_photo(
         callback.from_user.id,
-        photo=check_data[1],
+        photo=FSInputFile(check_data[1]),
         caption=caption,
         parse_mode="Markdown",
         reply_markup=await kb.back_to_user_archive(f"user_archive:{check_data[0]}:{name}")
