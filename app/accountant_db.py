@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
 db_params = {
     "dbname": os.getenv("DB_NAME"),
     "user": os.getenv("DB_USER"),

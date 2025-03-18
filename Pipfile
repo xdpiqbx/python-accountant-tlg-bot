@@ -8,6 +8,7 @@ aiogram = "*"
 psycopg2 = "*"
 cloudinary = "*"
 dotenv = "*"
+python-dotenv = "*"
 
 [dev-packages]
 
