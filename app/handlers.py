@@ -26,9 +26,9 @@ DESTINATION_PATH = os.getenv("DESTINATION_PATH")
 # from env_variables import EXPERT, TOKEN, destination_path  # , cloudinary_config, CLOUDINARY_FOLDER
 
 # Cloudinary
-import cloudinary
-import cloudinary.uploader
-import cloudinary.api
+# import cloudinary
+# import cloudinary.uploader
+# import cloudinary.api
 
 # ---------------------------------------------------------------------------
 
