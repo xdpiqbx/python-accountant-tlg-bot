@@ -537,7 +537,7 @@ async def archive(callback: CallbackQuery):
     await callback.bot.send_message(
         chat_id=callback.from_user.id,
         text=message,
-        reply_markup=await kb.main_menu()
+        reply_markup=await kb.back_to_main_menu()
     )
 
 # @router.message(Command("register"))

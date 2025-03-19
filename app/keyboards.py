@@ -68,6 +68,12 @@ async def main_menu():
     return InlineKeyboardMarkup(inline_keyboard=inline_keyboard)
 
 
+async def back_to_main_menu():
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="Back to Menu", callback_data=f"back_to_main")]
+    ])
+
+
 async def all_checks_with_buttons(checks):
     keyboard = InlineKeyboardBuilder()
     for check in checks:
