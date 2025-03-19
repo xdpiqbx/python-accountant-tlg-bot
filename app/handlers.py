@@ -20,7 +20,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-EXPERT = os.getenv("EXPERT_NIC")
+EXPERT_TLG_ID = os.getenv("EXPERT_TLG_ID")
 TOKEN = os.getenv("TOKEN")
 DESTINATION_PATH = os.getenv("DESTINATION_PATH")
 # from env_variables import EXPERT, TOKEN, destination_path  # , cloudinary_config, CLOUDINARY_FOLDER
@@ -81,7 +81,7 @@ async def register(message: Message, state: FSMContext):
         await db.insert_new_user("candidate", (tlg_id, nic,))
         await message.answer("Wait for approve.")
         await message.bot.send_message(
-            chat_id=EXPERT,
+            chat_id=EXPERT_TLG_ID,
             text=f"We have a new warrior:\nCall sign: {nic}\nTelegram id: {tlg_id}",
             reply_markup=await kb.list_of_candidates()
         )
