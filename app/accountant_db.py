@@ -257,7 +257,7 @@ async def select_total_sum_refund():
 async def start_db():
     if await is_connected():
         await create_tables()
-        await insert_expert()
+        # await insert_expert()
         print("Connected.")
     else:
         print("Not connected to the database.")
