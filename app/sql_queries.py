@@ -126,8 +126,9 @@ def create_table_check_archive():
 
 def insert_new_user_to_db(table_name):
     return (
-        f"INSERT INTO {table_name} (tlg_id, nic)"
-        f"VALUES (%s, %s)"
+        f"INSERT INTO {table_name} (tlg_id, nic) "
+        f"VALUES (%s, %s) "
+        f"ON CONFLICT (tlg_id) DO NOTHING"
     )
 
 
