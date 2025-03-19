@@ -8,7 +8,6 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 
 from app.handlers import router
-from env_variables import TOKEN
 from app.accountant_db import start_db
 from dotenv import load_dotenv
 

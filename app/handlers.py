@@ -16,7 +16,14 @@ import app.keyboards as kb
 import app.accountant_db as db
 import app.utils as util
 
-from env_variables import EXPERT, TOKEN, destination_path  # , cloudinary_config, CLOUDINARY_FOLDER
+from dotenv import load_dotenv
+
+load_dotenv()
+
+EXPERT = os.getenv("EXPERT_NIC")
+TOKEN = os.getenv("TOKEN")
+DESTINATION_PATH = os.getenv("DESTINATION_PATH")
+# from env_variables import EXPERT, TOKEN, destination_path  # , cloudinary_config, CLOUDINARY_FOLDER
 
 # Cloudinary
 import cloudinary
@@ -137,9 +144,9 @@ async def get_check_image(message: Message, state: FSMContext):
     formatted_time = datetime.now().strftime("%d.%m.%Y_%H-%M-%S")
     parent_dir = os.path.abspath(os.path.join(os.getcwd(), ".."))
     user_folder = f"{data['user_name']}"
-    os.makedirs(os.path.join(parent_dir, destination_path, user_folder), exist_ok=True)
+    os.makedirs(os.path.join(parent_dir, DESTINATION_PATH, user_folder), exist_ok=True)
     file_name = f"{data['user_name']}_{formatted_time}.jpg"
-    file_to_save = os.path.join(parent_dir, destination_path, user_folder, file_name)
+    file_to_save = os.path.join(parent_dir, DESTINATION_PATH, user_folder, file_name)
     async with aiohttp.ClientSession() as session:
         async with session.get(file_path) as resp:
             if resp.status == 200:
@@ -395,7 +402,8 @@ async def user_expenses(callback: CallbackQuery):
 
     await callback.message.answer(
         text=f"This is all {name} expenses",
-        reply_markup=await kb.all_checks_with_buttons_for_current_from_sqad_exp(checks, tlg_id, name, to_show_arch_button)
+        reply_markup=await kb.all_checks_with_buttons_for_current_from_sqad_exp(checks, tlg_id, name,
+                                                                                to_show_arch_button)
     )
 
 
