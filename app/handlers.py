@@ -103,7 +103,13 @@ async def add_new_warrior_to_db(callback: CallbackQuery):
         reply_markup=await kb.main_menu()
     )
     await callback.message.edit_reply_markup(f"Added to db. {user_data[1]}")
-
+    # TODO:
+    # list of candidates if exists
+    count_candidates = await db.count_candidates()
+    if count_candidates > 0:
+        await callback.message.answer(text="Wait for approve:", reply_markup=await kb.list_of_candidates())
+    else:
+        await callback.message.answer(text="There is no any candidates.", reply_markup=await kb.back_to_main_menu())
 
 @router.callback_query(F.data.startswith("ban_usr"))
 async def add_new_warrior_to_db(callback: CallbackQuery):
@@ -113,6 +119,13 @@ async def add_new_warrior_to_db(callback: CallbackQuery):
     await db.delete_from_db_by_tlg_id("warrior", user_data[0])
     await callback.bot.send_message(chat_id=user_data[0], text="❌ You have been banned ❌", reply_markup=None)
     await callback.message.edit_reply_markup(f"Banned. {user_data[1]}", reply_markup=None)
+    # TODO:
+    # list of candidates if exists
+    count_candidates = await db.count_candidates()
+    if count_candidates > 0:
+        await callback.message.answer(text="Wait for approve:", reply_markup=await kb.list_of_candidates())
+    else:
+        await callback.message.answer(text="There is no any candidates.", reply_markup=await kb.back_to_main_menu())
 
 
 # ===================================================================================================================
@@ -218,7 +231,7 @@ async def get_comment_about_purchase(message: Message, state: FSMContext):
     await message.answer("Check data saved 💾", reply_markup=ReplyKeyboardRemove())
     await message.answer(
         f"Your balance has been increased.\nCurrent balance: {new_balance}",
-        reply_markup=await kb.main_menu())
+        reply_markup=await kb.back_to_main_menu())
     await state.clear()
 
 
@@ -279,7 +292,7 @@ async def get_comment_about_refund(message: Message, state: FSMContext):
         f"Your balance has been reduced.\nCurrent balance: {new_balance}",
         reply_markup=ReplyKeyboardRemove())
     await message.answer(
-        f"Main menu:",
+        f"Hi, what we do?\n(chose the option down below):",
         reply_markup=await kb.main_menu())
     await state.clear()
 

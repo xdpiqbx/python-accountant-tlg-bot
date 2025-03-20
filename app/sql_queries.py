@@ -16,6 +16,10 @@ def select_all_candidates():
     return f"SELECT tlg_id, nic FROM candidate"
 
 
+def count_candidates():
+    return f"SELECT COUNT(tlg_id) AS candidates_count FROM candidate "
+
+
 def select_balance_by_tlg_id():
     return f"SELECT balance FROM warrior WHERE tlg_id = %s"
 

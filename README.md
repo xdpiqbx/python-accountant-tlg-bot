@@ -16,7 +16,6 @@ add_check - So where did you spend the money?
 refund - Write down how much money you were refunded.
 
 TODO:
-All images store on Synology NAS
 
 add button statistics
     2 messages:
