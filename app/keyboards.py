@@ -69,10 +69,10 @@ async def list_of_warriors_archived_checks(users):
 
 
 async def main_menu(user_id):
-    buttons = ["Add check", "Refund", "Your expenses", "Squad expenses", "Archive", "Statistics"]
+    buttons = ["Add check 🧾", "Refund 🔙💲", "Your expenses 💸", "Squad expenses 💰", "Archive 🗃️", "Statistics 📊"]
     if EXPERT_TLG_ID == user_id:
-        buttons.append("All Warriors")
-        buttons.append("Candidates")
+        buttons.append("🐯 All Warriors 🐯 ")
+        buttons.append("Candidates 🙋‍♂️")
     inline_keyboard = [[InlineKeyboardButton(text=button, callback_data=button)] for button in buttons]
     return InlineKeyboardMarkup(inline_keyboard=inline_keyboard)
 
