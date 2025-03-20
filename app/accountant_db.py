@@ -144,6 +144,17 @@ async def select_user_by_tlg_id(tlg_id):
         print("Error inserting data:", e)
 
 
+async def select_all_warriors_with_balance():
+    try:
+        with psycopg2.connect(**db_params) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_query.select_all_warriors_with_balance())
+                result = cursor.fetchall()
+                return result
+    except Exception as e:
+        print("Error inserting data:", e)
+
+
 async def select_all_warriors():
     try:
         with psycopg2.connect(**db_params) as conn:

@@ -2,8 +2,11 @@ def select_by_tlg_id(table_name):
     return f"SELECT * FROM {table_name} WHERE tlg_id = %s"
 
 
-def select_all_warriors():
+def select_all_warriors_with_balance():
     return f"SELECT tlg_id, nic, balance FROM warrior WHERE balance > 0 ORDER BY balance DESC, nic ASC"
+
+def select_all_warriors():
+    return f"SELECT tlg_id, nic, balance FROM warrior ORDER BY balance DESC, nic ASC"
 
 
 def select_warriors_who_have_checks_in_archive():

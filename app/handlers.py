@@ -379,7 +379,7 @@ async def all_users_with_balance(callback: CallbackQuery):
         message_id=callback.message.message_id,
         reply_markup=None
     )
-    users = await db.select_all_warriors()
+    users = await db.select_all_warriors_with_balance()
     total_expenses = await db.select_sum_balance()
     await callback.message.answer(
         text=f"Here you can see all squad expenses.\n"
@@ -401,7 +401,7 @@ async def user_expenses(callback: CallbackQuery):
         reply_markup=None
     )
     if not checks:
-        users = await db.select_all_warriors()
+        users = await db.select_all_warriors_with_balance()
         await callback.message.answer(
             text=f"{name} already added all his checks to the archive.",
             reply_markup=await kb.list_of_warriors(users))
@@ -569,10 +569,10 @@ async def all_users_with_balance(callback: CallbackQuery):
         message_id=callback.message.message_id,
         reply_markup=None
     )
-    users = await db.select_all_warriors()
+    warriors = await db.select_all_warriors()
     await callback.message.answer(
         text=f"List of everyone registered in the bot.\n",
-        reply_markup=await kb.list_of_warriors(users)
+        reply_markup=await kb.list_of_warriors(warriors)
     )
 
 # @router.message(Command("register"))
