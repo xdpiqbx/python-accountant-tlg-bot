@@ -566,6 +566,19 @@ async def all_users_with_balance(callback: CallbackQuery):
     else:
         await callback.message.answer(text="There is no any candidates.", reply_markup=await kb.back_to_main_menu())
 
+@router.callback_query(F.data.startswith("All Warriors"))
+async def all_users_with_balance(callback: CallbackQuery):
+    await callback.bot.edit_message_reply_markup(
+        chat_id=callback.message.chat.id,
+        message_id=callback.message.message_id,
+        reply_markup=None
+    )
+    users = await db.select_all_warriors()
+    await callback.message.answer(
+        text=f"List of everyone registered in the bot.\n",
+        reply_markup=await kb.list_of_warriors(users)
+    )
+
 # @router.message(Command("register"))
 # async def reg_one(message: Message, state: FSMContext):
 #     await state.set_state(Reg.name)
