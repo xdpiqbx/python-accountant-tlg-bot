@@ -131,7 +131,7 @@ async def all_checks_with_buttons_for_current_from_sqad_exp(checks, tlg_id, name
             )
     keyboard.add(
         InlineKeyboardButton(
-            text=f"⬅️ Back", callback_data="Squad expenses"
+            text=f"⬅️ Back", callback_data="💰 Squad expenses 💰"
         )
     )
     return keyboard.adjust(2 if to_show_arch_button else 1).as_markup()
@@ -149,7 +149,7 @@ async def all_archived_checks(checks, name):
         )
     keyboard.add(
         InlineKeyboardButton(
-            text=f"⬅️ Back", callback_data="Archive"
+            text=f"⬅️ Back", callback_data="🗃️ Archive 🗃️"
         )
     )
     return keyboard.adjust(1).as_markup()
@@ -158,7 +158,7 @@ async def all_archived_checks(checks, name):
 async def add_to_archive(check_id):
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="Send to archive", callback_data=f"arch_check:{check_id}")],
-        [InlineKeyboardButton(text="⬅️ Back", callback_data=f"Your expenses")]
+        [InlineKeyboardButton(text="⬅️ Back", callback_data=f"💸 Your expenses 💸")]
     ])
 
 
@@ -175,13 +175,13 @@ async def squad_exp_user_checks(check_id, tlg_id, name, to_show_arch_button):
 
 async def call_squad_expenses():
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="⬅️ Back", callback_data=f"Squad expenses")]
+        [InlineKeyboardButton(text="⬅️ Back", callback_data=f"💰 Squad expenses 💰")]
     ])
 
 
 async def call_your_expenses():
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="⬅️ Back", callback_data=f"Your expenses")]
+        [InlineKeyboardButton(text="⬅️ Back", callback_data=f"💸 Your expenses 💸")]
     ])
 
 
