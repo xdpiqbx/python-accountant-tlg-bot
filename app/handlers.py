@@ -128,7 +128,7 @@ async def add_new_warrior_to_db(callback: CallbackQuery):
 # Registration and Ban - DONE
 
 # Add check
-@router.callback_query(F.data.startswith("Add check"))
+@router.callback_query(F.data.startswith("🧾 Add check 🧾"))
 async def add_check(callback: CallbackQuery, state: FSMContext):
     if await db.is_user_exists(str(callback.from_user.id), "banned"):
         await callback.message.answer("❌ You have been banned ❌", reply_markup=None)
@@ -236,7 +236,7 @@ async def get_comment_about_purchase(message: Message, state: FSMContext):
 
 
 # Refund
-@router.callback_query(F.data.startswith("Refund"))
+@router.callback_query(F.data.startswith("🤑 Refund 🤑"))
 async def refund(callback: CallbackQuery, state: FSMContext):
     if await db.is_user_exists(str(callback.from_user.id), "banned"):
         await callback.message.answer("❌ You have been banned ❌", reply_markup=None)
@@ -298,7 +298,7 @@ async def get_comment_about_refund(message: Message, state: FSMContext):
 
 
 # Your expenses
-@router.callback_query(F.data.startswith("Your expenses"))
+@router.callback_query(F.data.startswith("💸 Your expenses 💸"))
 async def your_expenses(callback: CallbackQuery):
     if await db.is_user_exists(str(callback.from_user.id), "banned"):
         await callback.message.answer("❌ You have been banned ❌", reply_markup=None)
@@ -372,7 +372,7 @@ async def check_to_arch(callback: CallbackQuery):
 # Your expenses - DONE
 
 # Squad expenses
-@router.callback_query(F.data.startswith("Squad expenses"))
+@router.callback_query(F.data.startswith("💰 Squad expenses 💰"))
 async def all_users_with_balance(callback: CallbackQuery):
     await callback.bot.edit_message_reply_markup(
         chat_id=callback.message.chat.id,
@@ -464,7 +464,7 @@ async def back_to_main_menu(callback: CallbackQuery):
 
 
 # Archive
-@router.callback_query(F.data.startswith("Archive"))
+@router.callback_query(F.data.startswith("🗃️ Archive 🗃️"))
 async def archive(callback: CallbackQuery):
     await callback.bot.edit_message_reply_markup(
         chat_id=callback.message.chat.id,
@@ -526,7 +526,7 @@ async def current_arch_check(callback: CallbackQuery):
     )
 
 
-@router.callback_query(F.data.startswith("Statistics"))
+@router.callback_query(F.data.startswith("📊 Statistics 📊"))
 async def archive(callback: CallbackQuery):
     await callback.bot.edit_message_reply_markup(
         chat_id=callback.message.chat.id,
@@ -549,7 +549,7 @@ async def archive(callback: CallbackQuery):
     )
 
 
-@router.callback_query(F.data.startswith("Candidates"))
+@router.callback_query(F.data.startswith("🙋‍♂️ Candidates 🙋‍♂️"))
 async def all_users_with_balance(callback: CallbackQuery):
     await callback.bot.edit_message_reply_markup(
         chat_id=callback.message.chat.id,
@@ -562,7 +562,7 @@ async def all_users_with_balance(callback: CallbackQuery):
     else:
         await callback.message.answer(text="There is no any candidates.", reply_markup=await kb.back_to_main_menu())
 
-@router.callback_query(F.data.startswith("All Warriors"))
+@router.callback_query(F.data.startswith("🐯 All Warriors 🐯 "))
 async def all_users_with_balance(callback: CallbackQuery):
     await callback.bot.edit_message_reply_markup(
         chat_id=callback.message.chat.id,
