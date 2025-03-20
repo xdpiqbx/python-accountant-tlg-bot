@@ -103,8 +103,6 @@ async def add_new_warrior_to_db(callback: CallbackQuery):
         reply_markup=await kb.main_menu(str(callback.from_user.id))
     )
     await callback.message.edit_reply_markup(f"Added to db. {user_data[1]}")
-    # TODO:
-    # list of candidates if exists
     count_candidates = await db.count_candidates()
     if count_candidates > 0:
         await callback.message.answer(text="Wait for approve:", reply_markup=await kb.list_of_candidates())
@@ -119,8 +117,6 @@ async def add_new_warrior_to_db(callback: CallbackQuery):
     await db.delete_from_db_by_tlg_id("warrior", user_data[0])
     await callback.bot.send_message(chat_id=user_data[0], text="❌ You have been banned ❌", reply_markup=None)
     await callback.message.edit_reply_markup(f"Banned. {user_data[1]}", reply_markup=None)
-    # TODO:
-    # list of candidates if exists
     count_candidates = await db.count_candidates()
     if count_candidates > 0:
         await callback.message.answer(text="Wait for approve:", reply_markup=await kb.list_of_candidates())
