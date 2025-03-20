@@ -69,7 +69,7 @@ async def command_start_handler(message: Message, state: FSMContext) -> None:
         user = await db.select_user_by_tlg_id(tlg_id)
         await message.answer(f"Hi, {user[2]} what we do?\n"
                              f"(chose the option down below)",
-                             reply_markup=await kb.main_menu())
+                             reply_markup=await kb.main_menu(tlg_id))
 
 
 @router.message(Register.nic)
@@ -100,7 +100,7 @@ async def add_new_warrior_to_db(callback: CallbackQuery):
     await callback.bot.send_message(
         chat_id=user_data[0],
         text="✅ Wellcome to the club =)",
-        reply_markup=await kb.main_menu()
+        reply_markup=await kb.main_menu(str(callback.from_user.id))
     )
     await callback.message.edit_reply_markup(f"Added to db. {user_data[1]}")
     # TODO:
@@ -293,7 +293,7 @@ async def get_comment_about_refund(message: Message, state: FSMContext):
         reply_markup=ReplyKeyboardRemove())
     await message.answer(
         f"Hi, what we do?\n(chose the option down below):",
-        reply_markup=await kb.main_menu())
+        reply_markup=await kb.main_menu(tlg_id))
     await state.clear()
 
 
@@ -460,9 +460,8 @@ async def back_to_main_menu(callback: CallbackQuery):
     await callback.bot.send_message(
         chat_id=callback.from_user.id,
         text=f"Hi, what we do?\n(chose the option down below)",
-        reply_markup=await kb.main_menu()
+        reply_markup=await kb.main_menu(str(callback.from_user.id))
     )
-
 
 # ===================================================================================================================
 # Squad expenses - DONE
@@ -552,6 +551,20 @@ async def archive(callback: CallbackQuery):
         text=message,
         reply_markup=await kb.back_to_main_menu()
     )
+
+
+@router.callback_query(F.data.startswith("Candidates"))
+async def all_users_with_balance(callback: CallbackQuery):
+    await callback.bot.edit_message_reply_markup(
+        chat_id=callback.message.chat.id,
+        message_id=callback.message.message_id,
+        reply_markup=None
+    )
+    count_candidates = await db.count_candidates()
+    if count_candidates > 0:
+        await callback.message.answer(text="Wait for approve:", reply_markup=await kb.list_of_candidates())
+    else:
+        await callback.message.answer(text="There is no any candidates.", reply_markup=await kb.back_to_main_menu())
 
 # @router.message(Command("register"))
 # async def reg_one(message: Message, state: FSMContext):

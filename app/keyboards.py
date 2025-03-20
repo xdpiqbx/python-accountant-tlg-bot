@@ -1,3 +1,4 @@
+import os
 from aiogram.types import (ReplyKeyboardMarkup, KeyboardButton,
                            InlineKeyboardMarkup, InlineKeyboardButton)
 
@@ -5,6 +6,11 @@ from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 
 import app.accountant_db as db
 import app.utils as util
+from dotenv import load_dotenv
+
+load_dotenv()
+
+EXPERT_TLG_ID = os.getenv("EXPERT_TLG_ID")
 
 
 async def list_of_candidates():
@@ -62,8 +68,10 @@ async def list_of_warriors_archived_checks(users):
     return keyboard.adjust(1).as_markup()
 
 
-async def main_menu():
+async def main_menu(user_id):
     buttons = ["Add check", "Refund", "Your expenses", "Squad expenses", "Archive", "Statistics"]
+    if EXPERT_TLG_ID == user_id:
+        buttons.append("Candidates")
     inline_keyboard = [[InlineKeyboardButton(text=button, callback_data=button)] for button in buttons]
     return InlineKeyboardMarkup(inline_keyboard=inline_keyboard)
 
