@@ -17,7 +17,7 @@ db_params = {
 print(db_params)
 
 
-async def is_connected():
+async def is_connected():  #  ==========================================================
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
@@ -28,7 +28,7 @@ async def is_connected():
         return False
 
 
-async def create_tables():
+async def create_tables():  #  ==========================================================
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
@@ -44,7 +44,7 @@ async def create_tables():
         print("Error while creating tables:", e)
 
 
-async def insert_expert():
+async def insert_expert():  #  !!!!!
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
@@ -58,7 +58,7 @@ async def insert_expert():
         print("Error inserting data:", e)
 
 
-async def insert_new_user(table_name, data):
+async def insert_new_user(table_name, data):  # ==========================================================
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
@@ -69,7 +69,7 @@ async def insert_new_user(table_name, data):
         print("Error inserting data:", e)
 
 
-async def insert_check(data):
+async def insert_check(data):  # ==========================================================
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
@@ -80,7 +80,7 @@ async def insert_check(data):
         print("Error inserting data:", e)
 
 
-async def insert_check_to_archive(data):
+async def insert_check_to_archive(data):  # ==========================================================
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
@@ -91,7 +91,7 @@ async def insert_check_to_archive(data):
         print("Error inserting data:", e)
 
 
-async def insert_refund(data):
+async def insert_refund(data):  # ==========================================================
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
@@ -102,7 +102,7 @@ async def insert_refund(data):
         print("Error inserting data:", e)
 
 
-async def delete_from_db_by_tlg_id(table_name, data):
+async def delete_from_db_by_tlg_id(table_name, data):  # ==========================================================
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
@@ -112,7 +112,7 @@ async def delete_from_db_by_tlg_id(table_name, data):
         print("Error inserting data:", e)
 
 
-async def delete_check_from_cash_check_by_id(check_id):
+async def delete_check_from_cash_check_by_id(check_id):  # ==========================================================
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
@@ -122,7 +122,7 @@ async def delete_check_from_cash_check_by_id(check_id):
         print("Error inserting data:", e)
 
 
-async def is_user_exists(tlg_id, table_name):
+async def is_user_exists(tlg_id, table_name):  # ==========================================================
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
@@ -133,7 +133,7 @@ async def is_user_exists(tlg_id, table_name):
         print("Error inserting data:", e)
 
 
-async def select_user_by_tlg_id(tlg_id):
+async def select_user_by_tlg_id(tlg_id):  # ==========================================================
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
@@ -144,7 +144,7 @@ async def select_user_by_tlg_id(tlg_id):
         print("Error inserting data:", e)
 
 
-async def select_all_warriors_with_balance():
+async def select_all_warriors_with_balance():  # ==========================================================
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
@@ -155,7 +155,7 @@ async def select_all_warriors_with_balance():
         print("Error inserting data:", e)
 
 
-async def select_all_warriors():
+async def select_all_warriors():  # ==========================================================
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
@@ -166,7 +166,7 @@ async def select_all_warriors():
         print("Error inserting data:", e)
 
 
-async def select_warriors_who_have_checks_in_archive():
+async def select_warriors_who_have_checks_in_archive():  # ==========================================================
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
@@ -177,7 +177,7 @@ async def select_warriors_who_have_checks_in_archive():
         print("Error inserting data:", e)
 
 
-async def select_all_candidates():
+async def select_all_candidates():  # ==========================================================
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
@@ -187,7 +187,7 @@ async def select_all_candidates():
     except Exception as e:
         print("Error inserting data:", e)
 
-async def count_candidates():
+async def count_candidates():  # ==========================================================
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
@@ -198,7 +198,7 @@ async def count_candidates():
         print("Error inserting data:", e)
 
 
-async def select_balance_by_tlg_id(tlg_id):
+async def select_balance_by_tlg_id(tlg_id):  # ==========================================================
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
@@ -209,7 +209,7 @@ async def select_balance_by_tlg_id(tlg_id):
         print("Error inserting data:", e)
 
 
-async def select_all_checks_for_current_user(tlg_id, table_name):
+async def select_all_checks_for_current_user(tlg_id, table_name):  # ===================================================
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
@@ -220,7 +220,7 @@ async def select_all_checks_for_current_user(tlg_id, table_name):
         print("Error inserting data:", e)
 
 
-async def select_check_by_id(check_id):
+async def select_check_by_id(check_id):  # ===================================================
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
