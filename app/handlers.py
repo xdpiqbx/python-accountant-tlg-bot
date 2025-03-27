@@ -16,6 +16,8 @@ import app.keyboards as kb
 import app.accountant_db as db
 import app.utils as util
 
+from app.db_class import Database
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -34,7 +36,7 @@ DESTINATION_PATH = os.getenv("DESTINATION_PATH")
 
 
 router = Router()
-
+db_obj = Database()
 
 class Register(StatesGroup):
     nic = State()
@@ -130,10 +132,11 @@ async def add_new_warrior_to_db(callback: CallbackQuery):
 # Add check
 @router.callback_query(F.data.startswith("🧾 Add check 🧾"))
 async def add_check(callback: CallbackQuery, state: FSMContext):
-    if await db.is_user_exists(str(callback.from_user.id), "banned"):
+    tlg_id = (str(callback.from_user.id), )
+    if await db.is_user_exists(tlg_id, "banned"):
         await callback.message.answer("❌ You have been banned ❌", reply_markup=None)
         return
-    user = await db.select_user_by_tlg_id(str(callback.from_user.id))
+    user = await db.select_user_by_tlg_id(tlg_id)
     await callback.bot.edit_message_reply_markup(
         chat_id=callback.message.chat.id,
         message_id=callback.message.message_id,

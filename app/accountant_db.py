@@ -14,9 +14,6 @@ db_params = {
     "port": os.getenv("DB_PORT")
 }
 
-print(db_params)
-
-
 async def is_connected():  #  ==========================================================
     try:
         with psycopg2.connect(**db_params) as conn:
@@ -231,7 +228,7 @@ async def select_check_by_id(check_id):  # =====================================
         print("Error inserting data:", e)
 
 
-async def select_arch_check_by_id(check_id):
+async def select_arch_check_by_id(check_id):   # ===================================================
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
@@ -242,7 +239,7 @@ async def select_arch_check_by_id(check_id):
         print("Error inserting data:", e)
 
 
-async def update_balance_by_tlg_id(balance, tlg_id):
+async def update_balance_by_tlg_id(balance, tlg_id):   # ===================================================
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
@@ -253,7 +250,7 @@ async def update_balance_by_tlg_id(balance, tlg_id):
         print("Error inserting data:", e)
 
 
-async def select_sum_balance():
+async def select_sum_balance():   # ===================================================
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
@@ -264,7 +261,7 @@ async def select_sum_balance():
         print("Error inserting data:", e)
 
 
-async def select_total_sum_refund():
+async def select_total_sum_refund():   # ===================================================
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
