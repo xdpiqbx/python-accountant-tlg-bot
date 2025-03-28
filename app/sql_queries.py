@@ -1,5 +1,7 @@
+# def select_by_tlg_id(table_name):
+#     return f"SELECT * FROM {table_name} WHERE tlg_id = %s"
 def select_by_tlg_id(table_name):
-    return f"SELECT * FROM {table_name} WHERE tlg_id = %s"
+    return f"SELECT * FROM {table_name} WHERE tlg_id = $1"
 
 
 def select_all_warriors_with_balance():

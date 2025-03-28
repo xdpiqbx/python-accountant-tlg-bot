@@ -56,19 +56,21 @@ class CashBack(StatesGroup):
 
 
 # /start
-@router.message(CommandStart())
+@router.message(CommandStart()) # ===================================================== Done with class Database
 async def command_start_handler(message: Message, state: FSMContext) -> None:
     await state.clear()
-    tlg_id = str(message.from_user.id)
-    if await db.is_user_exists(tlg_id, "banned"):
+    tlg_id = (str(message.from_user.id), )
+    # res = await db_obj.select_user_by_tlg_id("warrior", tlg_id)
+    # print(res)
+    if await db_obj.select_user_by_tlg_id("banned", tlg_id):
         await message.answer("❌ You have been banned ❌")
         return
-    if not await db.is_user_exists(tlg_id, "warrior"):
+    if not await db_obj.select_user_by_tlg_id("warrior", tlg_id):
         await message.answer("REGISTRATION needed.")
         await state.set_state(Register.nic)
         await message.answer("Send me your call sign (in english):", reply_markup=None)
     else:
-        user = await db.select_user_by_tlg_id(tlg_id)
+        user = await db_obj.select_user_by_tlg_id("warrior", tlg_id)
         await message.answer(f"Hi, {user[2]} what we do?\n"
                              f"(chose the option down below)",
                              reply_markup=await kb.main_menu(tlg_id))
