@@ -7,6 +7,7 @@ def select_by_tlg_id(table_name):
 def select_all_warriors_with_balance():
     return f"SELECT tlg_id, nic, balance FROM warrior WHERE balance > 0 ORDER BY balance DESC, nic ASC"
 
+
 def select_all_warriors():
     return f"SELECT tlg_id, nic, balance FROM warrior ORDER BY balance DESC, nic ASC"
 
@@ -136,7 +137,8 @@ def create_table_check_archive():
 def insert_new_user_to_db(table_name):
     return (
         f"INSERT INTO {table_name} (tlg_id, nic) "
-        f"VALUES (%s, %s) "
+        # f"VALUES (%s, %s) "
+        f"VALUES ($1, $2) "
         f"ON CONFLICT (tlg_id) DO NOTHING"
     )
 
@@ -164,7 +166,8 @@ def insert_refund_to_db():
 
 def delete_by_tlg_id(table_name):
     return (
-        f"DELETE FROM {table_name} WHERE tlg_id = %s;"
+        # f"DELETE FROM {table_name} WHERE tlg_id = %s;"
+        f"DELETE FROM {table_name} WHERE tlg_id = $1;"
     )
 
 

@@ -14,10 +14,12 @@ load_dotenv()
 
 dp = Dispatcher()
 
+
 # Bot startup: Connect to database
 async def on_startup():
     await db_obj.start_db()
     print("Bot started and DB connected.")
+
 
 # Bot shutdown: Close database connection
 async def on_shutdown():

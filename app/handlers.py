@@ -38,6 +38,7 @@ DESTINATION_PATH = os.getenv("DESTINATION_PATH")
 router = Router()
 db_obj = Database()
 
+
 class Register(StatesGroup):
     nic = State()
 
@@ -56,10 +57,10 @@ class CashBack(StatesGroup):
 
 
 # /start
-@router.message(CommandStart()) # ===================================================== Done with class Database
+@router.message(CommandStart())  # ===================================================== Done with class Database
 async def command_start_handler(message: Message, state: FSMContext) -> None:
     await state.clear()
-    tlg_id = (str(message.from_user.id), )
+    tlg_id = (str(message.from_user.id),)
     # res = await db_obj.select_user_by_tlg_id("warrior", tlg_id)
     # print(res)
     if await db_obj.select_user_by_tlg_id("banned", tlg_id):
@@ -81,8 +82,8 @@ async def register(message: Message, state: FSMContext):
     tlg_id = str(message.from_user.id)
     nic = message.text
     await state.clear()
-    if not await db.is_user_exists(tlg_id, "candidate"):
-        await db.insert_new_user("candidate", (tlg_id, nic,))
+    if not await db_obj.select_user_by_tlg_id("candidate", (tlg_id, )):
+        await db_obj.insert_new_user("candidate", (tlg_id, nic,))
         await message.answer("Wait for approve.")
         await message.bot.send_message(
             chat_id=EXPERT_TLG_ID,
@@ -97,31 +98,33 @@ async def register(message: Message, state: FSMContext):
 async def add_new_warrior_to_db(callback: CallbackQuery):
     user_data = tuple(callback.data.split(":")[1:])
     # add user to warrior
-    await db.insert_new_user("warrior", user_data)
+    await db_obj.insert_new_user("warrior", user_data)
     # remove from candidates & banned
-    await db.delete_from_db_by_tlg_id("candidate", user_data[0])
-    await db.delete_from_db_by_tlg_id("banned", user_data[0])
+    await db_obj.delete_from_db_by_tlg_id("candidate", (user_data[0], ))
+    await db_obj.delete_from_db_by_tlg_id("banned", (user_data[0], ))
     await callback.bot.send_message(
         chat_id=user_data[0],
         text="✅ Wellcome to the club =)",
         reply_markup=await kb.main_menu(str(callback.from_user.id))
     )
     await callback.message.edit_reply_markup(f"Added to db. {user_data[1]}")
-    count_candidates = await db.count_candidates()
+    count_candidates = await db_obj.count_candidates()
+    print(count_candidates)
     if count_candidates > 0:
         await callback.message.answer(text="Wait for approve:", reply_markup=await kb.list_of_candidates())
     else:
         await callback.message.answer(text="There is no any candidates.", reply_markup=await kb.back_to_main_menu())
 
+
 @router.callback_query(F.data.startswith("ban_usr"))
 async def add_new_warrior_to_db(callback: CallbackQuery):
     user_data = tuple(callback.data.split(":")[1:])
-    await db.insert_new_user("banned", user_data)
-    await db.delete_from_db_by_tlg_id("candidate", user_data[0])
-    await db.delete_from_db_by_tlg_id("warrior", user_data[0])
+    await db_obj.insert_new_user("banned", user_data)
+    await db_obj.delete_from_db_by_tlg_id("candidate", (user_data[0], ))
+    await db_obj.delete_from_db_by_tlg_id("warrior", (user_data[0], ))
     await callback.bot.send_message(chat_id=user_data[0], text="❌ You have been banned ❌", reply_markup=None)
     await callback.message.edit_reply_markup(f"Banned. {user_data[1]}", reply_markup=None)
-    count_candidates = await db.count_candidates()
+    count_candidates = await db_obj.count_candidates()
     if count_candidates > 0:
         await callback.message.answer(text="Wait for approve:", reply_markup=await kb.list_of_candidates())
     else:
@@ -134,7 +137,7 @@ async def add_new_warrior_to_db(callback: CallbackQuery):
 # Add check
 @router.callback_query(F.data.startswith("🧾 Add check 🧾"))
 async def add_check(callback: CallbackQuery, state: FSMContext):
-    tlg_id = (str(callback.from_user.id), )
+    tlg_id = (str(callback.from_user.id),)
     if await db.is_user_exists(tlg_id, "banned"):
         await callback.message.answer("❌ You have been banned ❌", reply_markup=None)
         return
@@ -464,6 +467,7 @@ async def back_to_main_menu(callback: CallbackQuery):
         reply_markup=await kb.main_menu(str(callback.from_user.id))
     )
 
+
 # ===================================================================================================================
 # Squad expenses - DONE
 
@@ -566,6 +570,7 @@ async def all_users_with_balance(callback: CallbackQuery):
         await callback.message.answer(text="Wait for approve:", reply_markup=await kb.list_of_candidates())
     else:
         await callback.message.answer(text="There is no any candidates.", reply_markup=await kb.back_to_main_menu())
+
 
 @router.callback_query(F.data.startswith("🐯 All Warriors 🐯 "))
 async def all_users_with_balance(callback: CallbackQuery):
