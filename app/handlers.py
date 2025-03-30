@@ -52,19 +52,19 @@ class CashBack(StatesGroup):
 @router.message(CommandStart())
 async def command_start_handler(message: Message, state: FSMContext) -> None:
     await state.clear()
-    tlg_id = (str(message.from_user.id),)
-    if await db_obj.select_user_by_tlg_id("banned", tlg_id):
+    tlg_id = str(message.from_user.id)
+    if await db_obj.select_user_by_tlg_id("banned", [tlg_id]):
         await message.answer("❌ You have been banned ❌")
         return
-    if not await db_obj.select_user_by_tlg_id("warrior", tlg_id):
+    if not await db_obj.select_user_by_tlg_id("warrior", [tlg_id]):
         await message.answer("REGISTRATION needed.")
         await state.set_state(Register.nic)
         await message.answer("Send me your call sign (in english):", reply_markup=None)
     else:
-        user = await db_obj.select_user_by_tlg_id("warrior", tlg_id)
+        user = await db_obj.select_user_by_tlg_id("warrior", [tlg_id])
         await message.answer(f"Hi, {user[2]} what we do?\n"
                              f"(chose the option down below)",
-                             reply_markup=await kb.main_menu(tlg_id[0]))
+                             reply_markup=await kb.main_menu(tlg_id))
 
 
 @router.message(Register.nic)
@@ -72,8 +72,8 @@ async def register(message: Message, state: FSMContext):
     tlg_id = str(message.from_user.id)
     nic = message.text
     await state.clear()
-    if not await db_obj.select_user_by_tlg_id("candidate", (tlg_id, )):
-        await db_obj.insert_new_user("candidate", (tlg_id, nic,))
+    if not await db_obj.select_user_by_tlg_id("candidate", [tlg_id]):
+        await db_obj.insert_new_user("candidate", [tlg_id, nic])
         await message.answer("Wait for approve.")
         candidates = await db_obj.select_all_candidates()
         await message.bot.send_message(
@@ -87,12 +87,12 @@ async def register(message: Message, state: FSMContext):
 
 @router.callback_query(F.data.startswith("add_usr"))
 async def add_new_warrior_to_db(callback: CallbackQuery):
-    [tlg_id, nic] = tuple(callback.data.split(":")[1:])
+    [tlg_id, nic] = callback.data.split(":")[1:]
     # add user to warrior
-    await db_obj.insert_new_user("warrior", (tlg_id, nic,))
+    await db_obj.insert_new_user("warrior", [tlg_id, nic])
     # remove from candidates & banned
-    await db_obj.delete_from_db_by_tlg_id("candidate", (tlg_id, ))
-    await db_obj.delete_from_db_by_tlg_id("banned", (tlg_id, ))
+    await db_obj.delete_from_db_by_tlg_id("candidate", [tlg_id])
+    await db_obj.delete_from_db_by_tlg_id("banned", [tlg_id])
     await callback.bot.send_message(
         chat_id=tlg_id,
         text="✅ Wellcome to the club =)",
@@ -115,12 +115,12 @@ async def add_new_warrior_to_db(callback: CallbackQuery):
 
 @router.callback_query(F.data.startswith("ban_usr"))
 async def add_new_warrior_to_db(callback: CallbackQuery):
-    user_data = tuple(callback.data.split(":")[1:])
-    await db_obj.insert_new_user("banned", user_data)
-    await db_obj.delete_from_db_by_tlg_id("candidate", (user_data[0], ))
-    await db_obj.delete_from_db_by_tlg_id("warrior", (user_data[0], ))
-    await callback.bot.send_message(chat_id=user_data[0], text="❌ You have been banned ❌", reply_markup=None)
-    await callback.message.edit_reply_markup(f"Banned. {user_data[1]}", reply_markup=None)
+    [tlg_id, nic] = tuple(callback.data.split(":")[1:])
+    await db_obj.insert_new_user("banned", [tlg_id, nic])
+    await db_obj.delete_from_db_by_tlg_id("candidate", [tlg_id])
+    await db_obj.delete_from_db_by_tlg_id("warrior", [tlg_id])
+    await callback.bot.send_message(chat_id=tlg_id, text="❌ You have been banned ❌", reply_markup=None)
+    await callback.message.edit_reply_markup(f"Banned. {nic}", reply_markup=None)
     count_candidates = await db_obj.count_candidates()
     if count_candidates > 0:
         candidates = await db_obj.select_all_candidates()
@@ -588,7 +588,7 @@ async def all_users_with_balance(callback: CallbackQuery):
         )
 
 
-@router.callback_query(F.data.startswith("🐯 All Warriors 🐯 "))
+@router.callback_query(F.data.startswith("🐯 All Warriors 🐯"))
 async def all_users_with_balance(callback: CallbackQuery):
     await callback.bot.edit_message_reply_markup(
         chat_id=callback.message.chat.id,

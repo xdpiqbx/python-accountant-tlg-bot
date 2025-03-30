@@ -76,8 +76,9 @@ async def main_menu(user_id):
         "📊 Statistics 📊"
     ]
     if EXPERT_TLG_ID == user_id:
-        buttons.append("🐯 All Warriors 🐯 ")
+        buttons.append("🐯 All Warriors 🐯")
         buttons.append("🙋‍♂️ Candidates 🙋‍♂️")
+        # buttons.append("❌🙅‍♂️ Banned 🙅‍♂️❌")
     inline_keyboard = [[InlineKeyboardButton(text=button, callback_data=button)] for button in buttons]
     return InlineKeyboardMarkup(inline_keyboard=inline_keyboard)
 
