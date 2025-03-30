@@ -141,17 +141,17 @@ async def add_new_warrior_to_db(callback: CallbackQuery):
 # Add check
 @router.callback_query(F.data.startswith("🧾 Add check 🧾"))
 async def add_check(callback: CallbackQuery, state: FSMContext):
-    tlg_id = (str(callback.from_user.id), )
-    if await db_obj.select_user_by_tlg_id("banned", tlg_id):
+    tlg_id = str(callback.from_user.id)
+    if await db_obj.select_user_by_tlg_id("banned", [tlg_id]):
         await callback.message.answer("❌ You have been banned ❌", reply_markup=None)
         return
-    user = await db_obj.select_user_by_tlg_id("warrior", tlg_id)
+    [_, _, nic, _] = await db_obj.select_user_by_tlg_id("warrior", [tlg_id])
     await callback.bot.edit_message_reply_markup(
         chat_id=callback.message.chat.id,
         message_id=callback.message.message_id,
         reply_markup=None
     )
-    await state.update_data(user_name=user[2])
+    await state.update_data(user_name=nic)
     await state.set_state(CashCheck.image_url)
     await callback.message.answer(f"Give me image of your check", reply_markup=None)
 
@@ -228,14 +228,14 @@ async def get_comment_about_purchase(message: Message, state: FSMContext):
     await state.update_data(comment=message.text)
     await state.set_state(CashCheck.comment)
     data = await state.get_data()
-    check_data_to_insert = (tlg_id, data['image_url'], data['amount'], data['comment'],)
+    check_data_to_insert = [tlg_id, data['image_url'], data['amount'], data['comment']]
     await db_obj.insert_check(check_data_to_insert)
     # get balance
-    current_balance = await db_obj.select_balance_by_tlg_id((tlg_id, ))
+    current_balance = await db_obj.select_balance_by_tlg_id([tlg_id])
     # add to balance
     new_balance = int(current_balance) + int(data['amount'])
     # update balance
-    await db_obj.update_balance_by_tlg_id((new_balance, tlg_id,))
+    await db_obj.update_balance_by_tlg_id([new_balance, tlg_id])
     await message.answer("Check data saved 💾", reply_markup=ReplyKeyboardRemove())
     await message.answer(
         f"Your balance has been increased.\nCurrent balance: {new_balance}",
@@ -250,11 +250,11 @@ async def get_comment_about_purchase(message: Message, state: FSMContext):
 # Refund
 @router.callback_query(F.data.startswith("🤑 Refund 🤑"))
 async def refund(callback: CallbackQuery, state: FSMContext):
-    tlg_id = (str(callback.from_user.id), )
-    if await db_obj.select_user_by_tlg_id("banned", tlg_id):
+    tlg_id = str(callback.from_user.id)
+    if await db_obj.select_user_by_tlg_id("banned", [tlg_id]):
         await callback.message.answer("❌ You have been banned ❌", reply_markup=None)
         return
-    [_, _, nic, balance] = await db_obj.select_user_by_tlg_id("warrior", tlg_id)
+    [_, _, nic, balance] = await db_obj.select_user_by_tlg_id("warrior", [tlg_id])
     await callback.bot.edit_message_reply_markup(
         chat_id=callback.message.chat.id,
         message_id=callback.message.message_id,
@@ -289,14 +289,14 @@ async def get_comment_about_refund(message: Message, state: FSMContext):
     await state.update_data(comment=message.text)
     await state.set_state(CashBack.comment)
     data = await state.get_data()
-    refund_data_to_insert = (tlg_id, data['amount'], data['comment'],)
+    refund_data_to_insert = [tlg_id, data['amount'], data['comment']]
     await db_obj.insert_refund(refund_data_to_insert)
     # get balance
-    current_balance = await db_obj.select_balance_by_tlg_id((tlg_id, ))
+    current_balance = await db_obj.select_balance_by_tlg_id([tlg_id])
     # reduce balance
     new_balance = int(current_balance) - int(data['amount'])
     # update balance
-    await db_obj.update_balance_by_tlg_id((new_balance, tlg_id,))
+    await db_obj.update_balance_by_tlg_id([new_balance, tlg_id])
     await message.answer(
         f"Your balance has been reduced.\nCurrent balance: {new_balance}",
         reply_markup=ReplyKeyboardRemove())
@@ -313,11 +313,11 @@ async def get_comment_about_refund(message: Message, state: FSMContext):
 # Your expenses
 @router.callback_query(F.data.startswith("💸 Your expenses 💸"))
 async def your_expenses(callback: CallbackQuery):
-    tlg_id = (str(callback.from_user.id), )
-    if await db_obj.select_user_by_tlg_id("banned", tlg_id):
+    tlg_id = str(callback.from_user.id)
+    if await db_obj.select_user_by_tlg_id("banned", [tlg_id]):
         await callback.message.answer("❌ You have been banned ❌", reply_markup=None)
         return
-    checks = await db_obj.select_all_checks_for_current_user("cash_check", tlg_id)
+    checks = await db_obj.select_all_checks_for_current_user("cash_check", [tlg_id])
     await callback.bot.edit_message_reply_markup(
         chat_id=callback.message.chat.id,
         message_id=callback.message.message_id,
@@ -340,19 +340,19 @@ async def current_check(callback: CallbackQuery):
     )
     check_id = callback.data.split(":")[1]
     # select all data about check by its id
-    check_data = await db_obj.select_check_by_id((int(check_id), ))  # warrior_id, img_url, created_at, amount, comment
+    [_, image_url, created_at, amount, comment] = await db_obj.select_check_by_id([int(check_id)])
     # send as message
-    formatted_number = f"{check_data[3]:,}".replace(",", chr(0x2009))  # 12 897
-    formatted_date = check_data[2].strftime("%d.%m.%Y %H:%M")  # 15.03.2025 17-10
+    formatted_number = f"{amount:,}".replace(",", chr(0x2009))  # 12 897
+    formatted_date = created_at.strftime("%d.%m.%Y %H:%M")  # 15.03.2025 17-10
     caption = (
         f"🖼 *Check Data*\n"
         f"📅 Date: {formatted_date}\n"
         f"💰 Amount: {formatted_number} ₴\n"
-        f"💬 Comment: {check_data[4]}"
+        f"💬 Comment: {comment}"
     )
     await callback.bot.send_photo(
         callback.from_user.id,
-        photo=FSInputFile(check_data[1]),
+        photo=FSInputFile(image_url),
         caption=caption,
         parse_mode="Markdown",
         reply_markup=await kb.add_to_archive(check_id)
@@ -364,19 +364,19 @@ async def current_check(callback: CallbackQuery):
 @router.callback_query(F.data.startswith("arch_check"))
 async def check_to_arch(callback: CallbackQuery):
     check_id = callback.data.split(":")[1]
-    # select all data about check by it's id
-    check_data = await db_obj.select_check_by_id((int(check_id), ))  # warrior_id, img_url, created_at, amount, comment
+    # select all data about check by its id
+    check_data = await db_obj.select_check_by_id([int(check_id)])  # warrior_id, img_url, created_at, amount, comment
     # insert to check_archive
     await db_obj.insert_check_to_archive(check_data)
     # delete check from cash_check
-    await db_obj.delete_check_from_cash_check_by_id((int(check_id), ))
+    await db_obj.delete_check_from_cash_check_by_id([int(check_id)])
 
     await callback.bot.edit_message_reply_markup(
         chat_id=callback.message.chat.id,
         message_id=callback.message.message_id,
         reply_markup=None
     )
-    checks = await db_obj.select_all_checks_for_current_user("cash_check", (str(callback.from_user.id), ))
+    checks = await db_obj.select_all_checks_for_current_user("cash_check", [str(callback.from_user.id)])
     await callback.message.answer(
         text=f"This is all your expenses for today\n"
              f"If you have already refunded the money, simply add the old entries to the archive "
@@ -407,11 +407,11 @@ async def all_users_with_balance(callback: CallbackQuery):
 @router.callback_query(F.data.startswith("user_expenses"))
 async def user_expenses(callback: CallbackQuery):
     [tlg_id, name] = callback.data.split(":")[1:]
-    if await db_obj.select_user_by_tlg_id("banned", (tlg_id, )):
+    if await db_obj.select_user_by_tlg_id("banned", [tlg_id]):
         await callback.message.answer("❌ You have been banned ❌", reply_markup=None)
         return
 
-    checks = await db_obj.select_all_checks_for_current_user("cash_check", (tlg_id, ))
+    checks = await db_obj.select_all_checks_for_current_user("cash_check", [tlg_id])
     await callback.bot.edit_message_reply_markup(
         chat_id=callback.message.chat.id,
         message_id=callback.message.message_id,
@@ -442,21 +442,21 @@ async def current_check(callback: CallbackQuery):
         reply_markup=None
     )
     # select all data about check by its id
-    check_data = await db_obj.select_check_by_id((int(check_id), ))  # warrior_id, img_url, created_at, amount, comment
+    [_, img_url, created_at, amount, comment] = await db_obj.select_check_by_id([int(check_id)])
     # send as message
-    formatted_number = f"{check_data[3]:,}".replace(",", chr(0x2009))  # 12 897
-    formatted_date = check_data[2].strftime("%d.%m.%Y %H:%M")  # 15.03.2025 17:10
+    formatted_number = f"{amount:,}".replace(",", chr(0x2009))  # 12 897
+    formatted_date = created_at.strftime("%d.%m.%Y %H:%M")  # 15.03.2025 17:10
 
     caption = (
         f"🖼 *Check Data*\n"
         f"📅 Date: {formatted_date}\n"
         f"💰 Amount: {formatted_number} ₴\n"
-        f"💬 Comment: {check_data[4]}"
+        f"💬 Comment: {comment}"
     )
     to_show_arch_button = tlg_id == str(callback.from_user.id)
     await callback.bot.send_photo(
         callback.from_user.id,
-        photo=FSInputFile(check_data[1]),
+        photo=FSInputFile(img_url),
         caption=caption,
         parse_mode="Markdown",
         reply_markup=await kb.squad_exp_user_checks(check_id, tlg_id, name, to_show_arch_button)
@@ -507,7 +507,7 @@ async def archive(callback: CallbackQuery):
         message_id=callback.message.message_id,
         reply_markup=None
     )
-    archived_checks = await db_obj.select_all_checks_for_current_user("check_archive", (tlg_id,))
+    archived_checks = await db_obj.select_all_checks_for_current_user("check_archive", [tlg_id])
     await callback.message.answer(
         text=f"This is all {name} archived checks\n",
         reply_markup=await kb.all_archived_checks(archived_checks, name))
@@ -522,25 +522,25 @@ async def current_arch_check(callback: CallbackQuery):
         reply_markup=None
     )
     [check_id, name] = callback.data.split(":")[1:]
-    # select all data about check by its id: warrior_id, image_url, created_at, amount, comment, added_to_archive
-    check_data = await db_obj.select_arch_check_by_id((int(check_id), ))
+    [warrior_id, image_url, created_at,
+     amount, comment, added_to_archive] = await db_obj.select_arch_check_by_id([int(check_id)])
     # send as message
-    formatted_number = f"{check_data[3]:,}".replace(",", chr(0x2009))  # 12 897
-    formatted_date_created = check_data[2].strftime("%d.%m.%Y %H:%M")  # 15.03.2025 17:10
-    formatted_date_archived = check_data[5].strftime("%d.%m.%Y %H:%M")  # 15.03.2025 17:10
+    formatted_number = f"{amount:,}".replace(",", chr(0x2009))  # 12 897
+    formatted_date_created = created_at.strftime("%d.%m.%Y %H:%M")  # 15.03.2025 17:10
+    formatted_date_archived = added_to_archive.strftime("%d.%m.%Y %H:%M")  # 15.03.2025 17:10
     caption = (
         f"🖼 *Check Data*\n"
         f"📅 Created date: {formatted_date_created}\n"
         f"📅 Added to archive: {formatted_date_archived}\n"
         f"💰 Amount: {formatted_number} ₴\n"
-        f"💬 Comment: {check_data[4]}"
+        f"💬 Comment: {comment}"
     )
     await callback.bot.send_photo(
         callback.from_user.id,
-        photo=FSInputFile(check_data[1]),
+        photo=FSInputFile(image_url),
         caption=caption,
         parse_mode="Markdown",
-        reply_markup=await kb.back_to_user_archive(f"user_archive:{check_data[0]}:{name}")
+        reply_markup=await kb.back_to_user_archive(f"user_archive:{warrior_id}:{name}")
     )
 
 
@@ -553,12 +553,13 @@ async def archive(callback: CallbackQuery):
     )
 
     current_squad_expenses = await db_obj.select_sum_balance()
-    user_current_balance = await db_obj.select_balance_by_tlg_id((str(callback.from_user.id), ))
+    user_current_balance = await db_obj.select_balance_by_tlg_id([str(callback.from_user.id)])
     total_squad_refunds = await db_obj.select_total_sum_refund()
     message = (f"Your current balance:\n{util.hryvna_format(user_current_balance)}\n"
                f"\nSquadron Statistics:\n"
                f"The total debt to squadron:\n{util.hryvna_format(current_squad_expenses)}\n"
-               f"Total money spent for the entire time:\n{util.hryvna_format(current_squad_expenses + total_squad_refunds)}\n"
+               f"Total money spent for the entire time:\n"
+               f"{util.hryvna_format(current_squad_expenses + total_squad_refunds)}\n"
                f"Money refunded for the entire time:\n{util.hryvna_format(total_squad_refunds)}")
     await callback.bot.send_message(
         chat_id=callback.from_user.id,

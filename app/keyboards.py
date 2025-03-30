@@ -73,12 +73,13 @@ async def main_menu(user_id):
         "💸 Your expenses 💸",
         "💰 Squad expenses 💰",
         "🗃️ Archive 🗃️",
+        # "📈 Refund history 📈", # TODO
         "📊 Statistics 📊"
     ]
     if EXPERT_TLG_ID == user_id:
         buttons.append("🐯 All Warriors 🐯")
         buttons.append("🙋‍♂️ Candidates 🙋‍♂️")
-        # buttons.append("❌🙅‍♂️ Banned 🙅‍♂️❌")
+        # buttons.append("❌🙅‍♂️ Banned 🙅‍♂️❌")  # TODO
     inline_keyboard = [[InlineKeyboardButton(text=button, callback_data=button)] for button in buttons]
     return InlineKeyboardMarkup(inline_keyboard=inline_keyboard)
 
