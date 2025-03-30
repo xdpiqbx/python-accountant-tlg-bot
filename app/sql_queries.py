@@ -1,9 +1,12 @@
+# def select_by_tlg_id(table_name):
+#     return f"SELECT * FROM {table_name} WHERE tlg_id = %s"
 def select_by_tlg_id(table_name):
-    return f"SELECT * FROM {table_name} WHERE tlg_id = %s"
+    return f"SELECT * FROM {table_name} WHERE tlg_id = $1"
 
 
 def select_all_warriors_with_balance():
     return f"SELECT tlg_id, nic, balance FROM warrior WHERE balance > 0 ORDER BY balance DESC, nic ASC"
+
 
 def select_all_warriors():
     return f"SELECT tlg_id, nic, balance FROM warrior ORDER BY balance DESC, nic ASC"
@@ -24,24 +27,28 @@ def count_candidates():
 
 
 def select_balance_by_tlg_id():
-    return f"SELECT balance FROM warrior WHERE tlg_id = %s"
+    # return f"SELECT balance FROM warrior WHERE tlg_id = %s"
+    return f"SELECT balance FROM warrior WHERE tlg_id = $1"
 
 
 def select_all_checks_for_current_user(table_name):
     return (f"SELECT id, created_at, amount "
             f"FROM {table_name} "
-            f"WHERE warrior_id = %s "
+            # f"WHERE warrior_id = %s "
+            f"WHERE warrior_id = $1 "
             f"ORDER BY amount DESC")
 
 
 def select_check_by_id():
     return (f"SELECT warrior_id, image_url, created_at, amount, comment "
-            f"FROM cash_check WHERE id = %s")
+            # f"FROM cash_check WHERE id = %s")
+            f"FROM cash_check WHERE id = $1")
 
 
 def select_arch_check_by_id():
     return (f"SELECT warrior_id, image_url, created_at, amount, comment, added_to_archive "
-            f"FROM check_archive WHERE id = %s")
+            # f"FROM check_archive WHERE id = %s")
+            f"FROM check_archive WHERE id = $1")
 
 
 def select_sum_balance():
@@ -53,7 +60,8 @@ def select_total_refund():
 
 
 def update_balance_by_tlg_id():
-    return f"UPDATE warrior SET balance = %s WHERE tlg_id = %s"
+    # return f"UPDATE warrior SET balance = %s WHERE tlg_id = %s"
+    return f"UPDATE warrior SET balance = $1 WHERE tlg_id = $2"
 
 
 def create_table_warrior():
@@ -134,7 +142,8 @@ def create_table_check_archive():
 def insert_new_user_to_db(table_name):
     return (
         f"INSERT INTO {table_name} (tlg_id, nic) "
-        f"VALUES (%s, %s) "
+        # f"VALUES (%s, %s) "
+        f"VALUES ($1, $2) "
         f"ON CONFLICT (tlg_id) DO NOTHING"
     )
 
@@ -142,31 +151,36 @@ def insert_new_user_to_db(table_name):
 def insert_check_to_db():
     return (
         f"INSERT INTO cash_check (warrior_id, image_url, amount, comment)"
-        f"VALUES (%s, %s, %s, %s)"
+        # f"VALUES (%s, %s, %s, %s)"
+        f"VALUES ($1, $2, $3, $4)"
     )
 
 
 def insert_check_to_archive():
     return (
         f"INSERT INTO check_archive (warrior_id, image_url, created_at, amount, comment)"
-        f"VALUES (%s, %s, %s, %s, %s)"
+        # f"VALUES (%s, %s, %s, %s, %s)"
+        f"VALUES ($1, $2, $3, $4, $5)"
     )
 
 
 def insert_refund_to_db():
     return (
         f"INSERT INTO cash_back (warrior_id, amount, comment)"
-        f"VALUES (%s, %s, %s)"
+        # f"VALUES (%s, %s, %s)"
+        f"VALUES ($1, $2, $3)"
     )
 
 
 def delete_by_tlg_id(table_name):
     return (
-        f"DELETE FROM {table_name} WHERE tlg_id = %s;"
+        # f"DELETE FROM {table_name} WHERE tlg_id = %s;"
+        f"DELETE FROM {table_name} WHERE tlg_id = $1;"
     )
 
 
 def delete_check_from_cash_check_by_id():
     return (
-        f"DELETE FROM cash_check WHERE id = %s;"
+        # f"DELETE FROM cash_check WHERE id = %s;"
+        f"DELETE FROM cash_check WHERE id = $1;"
     )

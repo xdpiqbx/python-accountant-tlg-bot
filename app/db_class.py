@@ -6,7 +6,7 @@ import app.sql_queries as sql_query
 load_dotenv()
 
 DB_PARAMS = {
-    "dbname": os.getenv("DB_NAME"),
+    "database": os.getenv("DB_NAME"),
     "user": os.getenv("DB_USER"),
     "password": os.getenv("DB_PASSWORD"),
     "host": os.getenv("DB_HOST"),
@@ -84,11 +84,11 @@ class Database:
         await self.execute(sql_query.delete_check_from_cash_check_by_id(), *data)
         print("Deleted from DB!")
 
-    async def select_user_by_tlg_id(self, tlg_id):
-        return await self.execute(sql_query.select_by_tlg_id("warrior"), tlg_id, fetchrow=True)
+    async def select_user_by_tlg_id(self, table_name,  data):
+        return await self.execute(sql_query.select_by_tlg_id(table_name), *data, fetchrow=True)
 
-    async def is_user_exists(self, tlg_id, table_name):
-        return await self.execute(sql_query.select_by_tlg_id(table_name), tlg_id, fetchrow=True)
+    # async def is_user_exists(self, table_name,  data):
+    #     return await self.execute(sql_query.select_by_tlg_id(table_name), *data, fetchrow=True)
 
     async def select_all_warriors_with_balance(self):
         return await self.execute(sql_query.select_all_warriors_with_balance(), fetch=True)
@@ -108,18 +108,24 @@ class Database:
     async def select_balance_by_tlg_id(self, data):
         return await self.execute(sql_query.select_balance_by_tlg_id(), *data,  fetchval=True)
 
-    async def select_all_checks_for_current_user(self, data, table_name):
+    async def select_all_checks_for_current_user(self, table_name, data):
         return await self.execute(sql_query.select_all_checks_for_current_user(table_name), *data, fetch=True)
 
-    async def select_check_by_id(self, tlg_id):
-        return await self.execute(sql_query.select_check_by_id(), tlg_id, fetchrow=True)
+    async def select_check_by_id(self, data):
+        return await self.execute(sql_query.select_check_by_id(), *data, fetchrow=True)
 
-    async def update_balance_by_tlg_id(self, balance, tlg_id):
-        await self.execute(sql_query.update_balance_by_tlg_id(), balance, tlg_id)
+    async def select_arch_check_by_id(self, data):
+        return await self.execute(sql_query.select_arch_check_by_id(), *data, fetchrow=True)
+
+    async def update_balance_by_tlg_id(self, data):
+        await self.execute(sql_query.update_balance_by_tlg_id(), *data)  # data = (balance, tlg_id,)
         print("Balance updated successfully!")
 
     async def select_sum_balance(self):
         return await self.execute(sql_query.select_sum_balance(), fetchval=True) or 0
+
+    async def select_total_sum_refund(self):
+        return await self.execute(sql_query.select_total_refund(), fetchval=True) or 0
 
     async def start_db(self):
         await self.connect()
@@ -128,6 +134,3 @@ class Database:
             print("Connected and initialized database.")
         else:
             print("Failed to connect to the database.")
-
-# Ініціалізація об'єкта БД
-DB = Database()
