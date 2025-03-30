@@ -4,7 +4,6 @@ from aiogram.types import (ReplyKeyboardMarkup, KeyboardButton,
 
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 
-import app.accountant_db as db
 import app.utils as util
 from dotenv import load_dotenv
 
@@ -13,20 +12,19 @@ load_dotenv()
 EXPERT_TLG_ID = os.getenv("EXPERT_TLG_ID")
 
 
-async def list_of_candidates():
-    candidates = await db.select_all_candidates()
+async def list_of_candidates(candidates):
     keyboard = InlineKeyboardBuilder()
-    for candidate in candidates:
+    for [tlg_id, nic] in candidates:
         keyboard.add(
             InlineKeyboardButton(
-                text=f"{candidate[1]} ❌",
-                callback_data=f"ban_usr:{candidate[0]}:{candidate[1]}"
+                text=f"{nic} ❌",
+                callback_data=f"ban_usr:{tlg_id}:{nic}"
             )
         )
         keyboard.add(
             InlineKeyboardButton(
-                text=f"{candidate[1]} ✅",
-                callback_data=f"add_usr:{candidate[0]}:{candidate[1]}"
+                text=f"{nic} ✅",
+                callback_data=f"add_usr:{tlg_id}:{nic}"
             )
         )
     return keyboard.adjust(2).as_markup()

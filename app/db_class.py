@@ -108,7 +108,7 @@ class Database:
     async def select_balance_by_tlg_id(self, data):
         return await self.execute(sql_query.select_balance_by_tlg_id(), *data,  fetchval=True)
 
-    async def select_all_checks_for_current_user(self, data, table_name):
+    async def select_all_checks_for_current_user(self, table_name, data):
         return await self.execute(sql_query.select_all_checks_for_current_user(table_name), *data, fetch=True)
 
     async def select_check_by_id(self, data):

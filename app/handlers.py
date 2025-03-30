@@ -13,7 +13,6 @@ from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
 
 import app.keyboards as kb
-import app.accountant_db as db
 import app.utils as util
 
 from app.db_class import Database
@@ -25,13 +24,6 @@ load_dotenv()
 EXPERT_TLG_ID = os.getenv("EXPERT_TLG_ID")
 TOKEN = os.getenv("TOKEN")
 DESTINATION_PATH = os.getenv("DESTINATION_PATH")
-# from env_variables import EXPERT, TOKEN, destination_path  # , cloudinary_config, CLOUDINARY_FOLDER
-
-# Cloudinary
-# import cloudinary
-# import cloudinary.uploader
-# import cloudinary.api
-
 # ---------------------------------------------------------------------------
 
 
@@ -57,12 +49,10 @@ class CashBack(StatesGroup):
 
 
 # /start
-@router.message(CommandStart())  # ===================================================== Done with class Database
+@router.message(CommandStart())
 async def command_start_handler(message: Message, state: FSMContext) -> None:
     await state.clear()
     tlg_id = (str(message.from_user.id),)
-    # res = await db_obj.select_user_by_tlg_id("warrior", tlg_id)
-    # print(res)
     if await db_obj.select_user_by_tlg_id("banned", tlg_id):
         await message.answer("❌ You have been banned ❌")
         return
@@ -74,7 +64,7 @@ async def command_start_handler(message: Message, state: FSMContext) -> None:
         user = await db_obj.select_user_by_tlg_id("warrior", tlg_id)
         await message.answer(f"Hi, {user[2]} what we do?\n"
                              f"(chose the option down below)",
-                             reply_markup=await kb.main_menu(tlg_id))
+                             reply_markup=await kb.main_menu(tlg_id[0]))
 
 
 @router.message(Register.nic)
@@ -85,10 +75,11 @@ async def register(message: Message, state: FSMContext):
     if not await db_obj.select_user_by_tlg_id("candidate", (tlg_id, )):
         await db_obj.insert_new_user("candidate", (tlg_id, nic,))
         await message.answer("Wait for approve.")
+        candidates = await db_obj.select_all_candidates()
         await message.bot.send_message(
             chat_id=EXPERT_TLG_ID,
             text=f"We have a new warrior:\nCall sign: {nic}\nTelegram id: {tlg_id}",
-            reply_markup=await kb.list_of_candidates()
+            reply_markup=await kb.list_of_candidates(candidates)
         )
     else:
         await message.answer("I know about you. Just wait.", reply_markup=None)
@@ -96,24 +87,30 @@ async def register(message: Message, state: FSMContext):
 
 @router.callback_query(F.data.startswith("add_usr"))
 async def add_new_warrior_to_db(callback: CallbackQuery):
-    user_data = tuple(callback.data.split(":")[1:])
+    [tlg_id, nic] = tuple(callback.data.split(":")[1:])
     # add user to warrior
-    await db_obj.insert_new_user("warrior", user_data)
+    await db_obj.insert_new_user("warrior", (tlg_id, nic,))
     # remove from candidates & banned
-    await db_obj.delete_from_db_by_tlg_id("candidate", (user_data[0], ))
-    await db_obj.delete_from_db_by_tlg_id("banned", (user_data[0], ))
+    await db_obj.delete_from_db_by_tlg_id("candidate", (tlg_id, ))
+    await db_obj.delete_from_db_by_tlg_id("banned", (tlg_id, ))
     await callback.bot.send_message(
-        chat_id=user_data[0],
+        chat_id=tlg_id,
         text="✅ Wellcome to the club =)",
-        reply_markup=await kb.main_menu(str(callback.from_user.id))
+        reply_markup=await kb.main_menu(tlg_id)
     )
-    await callback.message.edit_reply_markup(f"Added to db. {user_data[1]}")
+    await callback.message.edit_reply_markup(f"Added to database {nic}")
     count_candidates = await db_obj.count_candidates()
-    print(count_candidates)
     if count_candidates > 0:
-        await callback.message.answer(text="Wait for approve:", reply_markup=await kb.list_of_candidates())
+        candidates = await db_obj.select_all_candidates()
+        await callback.message.answer(
+            text="Wait for approve:",
+            reply_markup=await kb.list_of_candidates(candidates)
+        )
     else:
-        await callback.message.answer(text="There is no any candidates.", reply_markup=await kb.back_to_main_menu())
+        await callback.message.answer(
+            text="There is no any candidates.",
+            reply_markup=await kb.back_to_main_menu()
+        )
 
 
 @router.callback_query(F.data.startswith("ban_usr"))
@@ -126,22 +123,29 @@ async def add_new_warrior_to_db(callback: CallbackQuery):
     await callback.message.edit_reply_markup(f"Banned. {user_data[1]}", reply_markup=None)
     count_candidates = await db_obj.count_candidates()
     if count_candidates > 0:
-        await callback.message.answer(text="Wait for approve:", reply_markup=await kb.list_of_candidates())
+        candidates = await db_obj.select_all_candidates()
+        await callback.message.answer(
+            text="Wait for approve:",
+            reply_markup=await kb.list_of_candidates(candidates)
+        )
     else:
-        await callback.message.answer(text="There is no any candidates.", reply_markup=await kb.back_to_main_menu())
+        await callback.message.answer(
+            text="There is no any candidates.",
+            reply_markup=await kb.back_to_main_menu()
+        )
 
 
 # ===================================================================================================================
-# Registration and Ban - DONE
+# Registration and Ban - DONE - implemented class Database
 
 # Add check
 @router.callback_query(F.data.startswith("🧾 Add check 🧾"))
 async def add_check(callback: CallbackQuery, state: FSMContext):
-    tlg_id = (str(callback.from_user.id),)
-    if await db.is_user_exists(tlg_id, "banned"):
+    tlg_id = (str(callback.from_user.id), )
+    if await db_obj.select_user_by_tlg_id("banned", tlg_id):
         await callback.message.answer("❌ You have been banned ❌", reply_markup=None)
         return
-    user = await db.select_user_by_tlg_id(tlg_id)
+    user = await db_obj.select_user_by_tlg_id("warrior", tlg_id)
     await callback.bot.edit_message_reply_markup(
         chat_id=callback.message.chat.id,
         message_id=callback.message.message_id,
@@ -224,14 +228,14 @@ async def get_comment_about_purchase(message: Message, state: FSMContext):
     await state.update_data(comment=message.text)
     await state.set_state(CashCheck.comment)
     data = await state.get_data()
-    check_data_to_insert = (int(tlg_id), data['image_url'], data['amount'], data['comment'],)
-    await db.insert_check(check_data_to_insert)
+    check_data_to_insert = (tlg_id, data['image_url'], data['amount'], data['comment'],)
+    await db_obj.insert_check(check_data_to_insert)
     # get balance
-    current_balance = await db.select_balance_by_tlg_id(tlg_id)
+    current_balance = await db_obj.select_balance_by_tlg_id((tlg_id, ))
     # add to balance
     new_balance = int(current_balance) + int(data['amount'])
     # update balance
-    await db.update_balance_by_tlg_id(new_balance, tlg_id)
+    await db_obj.update_balance_by_tlg_id((new_balance, tlg_id,))
     await message.answer("Check data saved 💾", reply_markup=ReplyKeyboardRemove())
     await message.answer(
         f"Your balance has been increased.\nCurrent balance: {new_balance}",
@@ -240,16 +244,17 @@ async def get_comment_about_purchase(message: Message, state: FSMContext):
 
 
 # ===================================================================================================================
-# Add check - DONE
+# Add check - DONE - implemented class Database
 
 
 # Refund
 @router.callback_query(F.data.startswith("🤑 Refund 🤑"))
 async def refund(callback: CallbackQuery, state: FSMContext):
-    if await db.is_user_exists(str(callback.from_user.id), "banned"):
+    tlg_id = (str(callback.from_user.id), )
+    if await db_obj.select_user_by_tlg_id("banned", tlg_id):
         await callback.message.answer("❌ You have been banned ❌", reply_markup=None)
         return
-    [_, _, nic, balance] = await db.select_user_by_tlg_id(str(callback.from_user.id))
+    [_, _, nic, balance] = await db_obj.select_user_by_tlg_id("warrior", tlg_id)
     await callback.bot.edit_message_reply_markup(
         chat_id=callback.message.chat.id,
         message_id=callback.message.message_id,
@@ -284,14 +289,14 @@ async def get_comment_about_refund(message: Message, state: FSMContext):
     await state.update_data(comment=message.text)
     await state.set_state(CashBack.comment)
     data = await state.get_data()
-    refund_data_to_insert = (int(tlg_id), data['amount'], data['comment'],)
-    await db.insert_refund(refund_data_to_insert)
+    refund_data_to_insert = (tlg_id, data['amount'], data['comment'],)
+    await db_obj.insert_refund(refund_data_to_insert)
     # get balance
-    current_balance = await db.select_balance_by_tlg_id(tlg_id)
+    current_balance = await db_obj.select_balance_by_tlg_id((tlg_id, ))
     # reduce balance
     new_balance = int(current_balance) - int(data['amount'])
     # update balance
-    await db.update_balance_by_tlg_id(new_balance, tlg_id)
+    await db_obj.update_balance_by_tlg_id((new_balance, tlg_id,))
     await message.answer(
         f"Your balance has been reduced.\nCurrent balance: {new_balance}",
         reply_markup=ReplyKeyboardRemove())
@@ -302,16 +307,17 @@ async def get_comment_about_refund(message: Message, state: FSMContext):
 
 
 # ===================================================================================================================
-# Refund - DONE
+# Refund - DONE - implemented class Database
 
 
 # Your expenses
 @router.callback_query(F.data.startswith("💸 Your expenses 💸"))
 async def your_expenses(callback: CallbackQuery):
-    if await db.is_user_exists(str(callback.from_user.id), "banned"):
+    tlg_id = (str(callback.from_user.id), )
+    if await db_obj.select_user_by_tlg_id("banned", tlg_id):
         await callback.message.answer("❌ You have been banned ❌", reply_markup=None)
         return
-    checks = await db.select_all_checks_for_current_user(str(callback.from_user.id), "cash_check")
+    checks = await db_obj.select_all_checks_for_current_user("cash_check", tlg_id)
     await callback.bot.edit_message_reply_markup(
         chat_id=callback.message.chat.id,
         message_id=callback.message.message_id,
@@ -332,9 +338,9 @@ async def current_check(callback: CallbackQuery):
         message_id=callback.message.message_id,
         reply_markup=None
     )
-    check_id = tuple(callback.data.split(":")[1:])
+    check_id = callback.data.split(":")[1]
     # select all data about check by its id
-    check_data = await db.select_check_by_id(check_id)  # warrior_id, image_url, created_at, amount, comment
+    check_data = await db_obj.select_check_by_id((int(check_id), ))  # warrior_id, img_url, created_at, amount, comment
     # send as message
     formatted_number = f"{check_data[3]:,}".replace(",", chr(0x2009))  # 12 897
     formatted_date = check_data[2].strftime("%d.%m.%Y %H:%M")  # 15.03.2025 17-10
@@ -349,26 +355,28 @@ async def current_check(callback: CallbackQuery):
         photo=FSInputFile(check_data[1]),
         caption=caption,
         parse_mode="Markdown",
-        reply_markup=await kb.add_to_archive(check_id[0])
+        reply_markup=await kb.add_to_archive(check_id)
     )
+# ===================================================================================================================
+# Your expenses - DONE - implemented class Database
 
 
 @router.callback_query(F.data.startswith("arch_check"))
 async def check_to_arch(callback: CallbackQuery):
-    check_id = tuple(callback.data.split(":")[1:])
+    check_id = callback.data.split(":")[1]
     # select all data about check by it's id
-    check_data = await db.select_check_by_id(check_id)  # warrior_id, image_url, created_at, amount, comment
+    check_data = await db_obj.select_check_by_id((int(check_id), ))  # warrior_id, img_url, created_at, amount, comment
     # insert to check_archive
-    await db.insert_check_to_archive(check_data)
+    await db_obj.insert_check_to_archive(check_data)
     # delete check from cash_check
-    await db.delete_check_from_cash_check_by_id(check_id)
+    await db_obj.delete_check_from_cash_check_by_id((int(check_id), ))
 
     await callback.bot.edit_message_reply_markup(
         chat_id=callback.message.chat.id,
         message_id=callback.message.message_id,
         reply_markup=None
     )
-    checks = await db.select_all_checks_for_current_user(str(callback.from_user.id), "cash_check")
+    checks = await db_obj.select_all_checks_for_current_user("cash_check", (str(callback.from_user.id), ))
     await callback.message.answer(
         text=f"This is all your expenses for today\n"
              f"If you have already refunded the money, simply add the old entries to the archive "
@@ -377,7 +385,7 @@ async def check_to_arch(callback: CallbackQuery):
 
 
 # ===================================================================================================================
-# Your expenses - DONE
+# Your expenses - DONE - implemented class Database
 
 # Squad expenses
 @router.callback_query(F.data.startswith("💰 Squad expenses 💰"))
@@ -387,8 +395,8 @@ async def all_users_with_balance(callback: CallbackQuery):
         message_id=callback.message.message_id,
         reply_markup=None
     )
-    users = await db.select_all_warriors_with_balance()
-    total_expenses = await db.select_sum_balance()
+    users = await db_obj.select_all_warriors_with_balance()
+    total_expenses = await db_obj.select_sum_balance()
     await callback.message.answer(
         text=f"Here you can see all squad expenses.\n"
              f"Total squad expenses for now is:\n"
@@ -399,17 +407,18 @@ async def all_users_with_balance(callback: CallbackQuery):
 @router.callback_query(F.data.startswith("user_expenses"))
 async def user_expenses(callback: CallbackQuery):
     [tlg_id, name] = callback.data.split(":")[1:]
-    if await db.is_user_exists(str(callback.from_user.id), "banned"):
+    if await db_obj.select_user_by_tlg_id("banned", (tlg_id, )):
         await callback.message.answer("❌ You have been banned ❌", reply_markup=None)
         return
-    checks = await db.select_all_checks_for_current_user(tlg_id, "cash_check")
+
+    checks = await db_obj.select_all_checks_for_current_user("cash_check", (tlg_id, ))
     await callback.bot.edit_message_reply_markup(
         chat_id=callback.message.chat.id,
         message_id=callback.message.message_id,
         reply_markup=None
     )
     if not checks:
-        users = await db.select_all_warriors_with_balance()
+        users = await db_obj.select_all_warriors_with_balance()
         await callback.message.answer(
             text=f"{name} already added all his checks to the archive.",
             reply_markup=await kb.list_of_warriors(users))
@@ -433,7 +442,7 @@ async def current_check(callback: CallbackQuery):
         reply_markup=None
     )
     # select all data about check by its id
-    check_data = await db.select_check_by_id(check_id)  # warrior_id, image_url, created_at, amount, comment
+    check_data = await db_obj.select_check_by_id((int(check_id), ))  # warrior_id, img_url, created_at, amount, comment
     # send as message
     formatted_number = f"{check_data[3]:,}".replace(",", chr(0x2009))  # 12 897
     formatted_date = check_data[2].strftime("%d.%m.%Y %H:%M")  # 15.03.2025 17:10
@@ -469,7 +478,7 @@ async def back_to_main_menu(callback: CallbackQuery):
 
 
 # ===================================================================================================================
-# Squad expenses - DONE
+# Squad expenses - DONE - implemented class Database
 
 
 # Archive
@@ -480,7 +489,7 @@ async def archive(callback: CallbackQuery):
         message_id=callback.message.message_id,
         reply_markup=None
     )
-    users = await db.select_warriors_who_have_checks_in_archive()
+    users = await db_obj.select_warriors_who_have_checks_in_archive()
     await callback.bot.send_message(
         chat_id=callback.from_user.id,
         text=f"List of users who have already archived their expenses.\n"
@@ -498,7 +507,7 @@ async def archive(callback: CallbackQuery):
         message_id=callback.message.message_id,
         reply_markup=None
     )
-    archived_checks = await db.select_all_checks_for_current_user(tlg_id, "check_archive")
+    archived_checks = await db_obj.select_all_checks_for_current_user("check_archive", (tlg_id,))
     await callback.message.answer(
         text=f"This is all {name} archived checks\n",
         reply_markup=await kb.all_archived_checks(archived_checks, name))
@@ -514,7 +523,7 @@ async def current_arch_check(callback: CallbackQuery):
     )
     [check_id, name] = callback.data.split(":")[1:]
     # select all data about check by its id: warrior_id, image_url, created_at, amount, comment, added_to_archive
-    check_data = await db.select_arch_check_by_id(check_id)
+    check_data = await db_obj.select_arch_check_by_id((int(check_id), ))
     # send as message
     formatted_number = f"{check_data[3]:,}".replace(",", chr(0x2009))  # 12 897
     formatted_date_created = check_data[2].strftime("%d.%m.%Y %H:%M")  # 15.03.2025 17:10
@@ -543,9 +552,9 @@ async def archive(callback: CallbackQuery):
         reply_markup=None
     )
 
-    current_squad_expenses = await db.select_sum_balance()
-    user_current_balance = await db.select_balance_by_tlg_id(str(callback.from_user.id))
-    total_squad_refunds = await db.select_total_sum_refund()
+    current_squad_expenses = await db_obj.select_sum_balance()
+    user_current_balance = await db_obj.select_balance_by_tlg_id((str(callback.from_user.id), ))
+    total_squad_refunds = await db_obj.select_total_sum_refund()
     message = (f"Your current balance:\n{util.hryvna_format(user_current_balance)}\n"
                f"\nSquadron Statistics:\n"
                f"The total debt to squadron:\n{util.hryvna_format(current_squad_expenses)}\n"
@@ -565,11 +574,18 @@ async def all_users_with_balance(callback: CallbackQuery):
         message_id=callback.message.message_id,
         reply_markup=None
     )
-    count_candidates = await db.count_candidates()
+    count_candidates = await db_obj.count_candidates()
     if count_candidates > 0:
-        await callback.message.answer(text="Wait for approve:", reply_markup=await kb.list_of_candidates())
+        candidates = await db_obj.select_all_candidates()
+        await callback.message.answer(
+            text="Wait for approve:",
+            reply_markup=await kb.list_of_candidates(candidates)
+        )
     else:
-        await callback.message.answer(text="There is no any candidates.", reply_markup=await kb.back_to_main_menu())
+        await callback.message.answer(
+            text="There is no any candidates.",
+            reply_markup=await kb.back_to_main_menu()
+        )
 
 
 @router.callback_query(F.data.startswith("🐯 All Warriors 🐯 "))
@@ -579,7 +595,7 @@ async def all_users_with_balance(callback: CallbackQuery):
         message_id=callback.message.message_id,
         reply_markup=None
     )
-    warriors = await db.select_all_warriors()
+    warriors = await db_obj.select_all_warriors()
     await callback.message.answer(
         text=f"List of everyone registered in the bot.\n",
         reply_markup=await kb.list_of_warriors(warriors)
