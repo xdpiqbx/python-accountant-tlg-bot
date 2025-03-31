@@ -1,5 +1,5 @@
 from datetime import datetime
-
+from aiogram.types import CallbackQuery
 
 def reformat_datetime_from_db(dt):
     # Original datetime string
@@ -12,3 +12,10 @@ def reformat_datetime_from_db(dt):
 
 def hryvna_format(amount):
     return f"{int(amount):,}{chr(0x2009)}{chr(0x20B4)}".replace(',', chr(0x2009))
+
+async def remove_prev_inline_keyboard(callback: CallbackQuery):
+    await callback.bot.edit_message_reply_markup(
+        chat_id=callback.message.chat.id,
+        message_id=callback.message.message_id,
+        reply_markup=None
+    )

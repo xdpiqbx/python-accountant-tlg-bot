@@ -145,11 +145,7 @@ async def add_check(callback: CallbackQuery, state: FSMContext):
         await callback.message.answer("❌ You have been banned ❌", reply_markup=None)
         return
     [_, _, nic, _] = await db_obj.select_user_by_tlg_id("warrior", [tlg_id])
-    await callback.bot.edit_message_reply_markup(
-        chat_id=callback.message.chat.id,
-        message_id=callback.message.message_id,
-        reply_markup=None
-    )
+    await util.remove_prev_inline_keyboard(callback)
     await state.update_data(user_name=nic)
     await state.set_state(CashCheck.image_url)
     await callback.message.answer(f"Give me image of your check", reply_markup=None)
@@ -228,11 +224,7 @@ async def refund(callback: CallbackQuery, state: FSMContext):
         await callback.message.answer("❌ You have been banned ❌", reply_markup=None)
         return
     [_, _, nic, balance] = await db_obj.select_user_by_tlg_id("warrior", [tlg_id])
-    await callback.bot.edit_message_reply_markup(
-        chat_id=callback.message.chat.id,
-        message_id=callback.message.message_id,
-        reply_markup=None
-    )
+    await util.remove_prev_inline_keyboard(callback)
     await state.set_state(CashBack.amount)
     await callback.message.answer(
         f"Hello {nic}\n"
@@ -291,11 +283,7 @@ async def your_expenses(callback: CallbackQuery):
         await callback.message.answer("❌ You have been banned ❌", reply_markup=None)
         return
     checks = await db_obj.select_all_checks_for_current_user("cash_check", [tlg_id])
-    await callback.bot.edit_message_reply_markup(
-        chat_id=callback.message.chat.id,
-        message_id=callback.message.message_id,
-        reply_markup=None
-    )
+    await util.remove_prev_inline_keyboard(callback)
     await callback.message.answer(
         text=f"This is all your expenses for today\n"
              f"If you have already refunded the money, simply add the old entries to the archive "
@@ -306,11 +294,7 @@ async def your_expenses(callback: CallbackQuery):
 
 @router.callback_query(F.data.startswith("check_data_for_my_exp"))
 async def current_check(callback: CallbackQuery):
-    await callback.bot.edit_message_reply_markup(
-        chat_id=callback.message.chat.id,
-        message_id=callback.message.message_id,
-        reply_markup=None
-    )
+    await util.remove_prev_inline_keyboard(callback)
     check_id = callback.data.split(":")[1]
     # select all data about check by its id
     [_, image_url, created_at, amount, comment] = await db_obj.select_check_by_id([int(check_id)])
@@ -344,11 +328,7 @@ async def check_to_arch(callback: CallbackQuery):
     # delete check from cash_check
     await db_obj.delete_check_from_cash_check_by_id([int(check_id)])
 
-    await callback.bot.edit_message_reply_markup(
-        chat_id=callback.message.chat.id,
-        message_id=callback.message.message_id,
-        reply_markup=None
-    )
+    await util.remove_prev_inline_keyboard(callback)
     checks = await db_obj.select_all_checks_for_current_user("cash_check", [str(callback.from_user.id)])
     await callback.message.answer(
         text=f"This is all your expenses for today\n"
@@ -363,11 +343,7 @@ async def check_to_arch(callback: CallbackQuery):
 # Squad expenses
 @router.callback_query(F.data.startswith("💰 Squad expenses 💰"))
 async def all_users_with_balance(callback: CallbackQuery):
-    await callback.bot.edit_message_reply_markup(
-        chat_id=callback.message.chat.id,
-        message_id=callback.message.message_id,
-        reply_markup=None
-    )
+    await util.remove_prev_inline_keyboard(callback)
     users = await db_obj.select_all_warriors_with_balance()
     total_expenses = await db_obj.select_sum_balance()
     await callback.message.answer(
@@ -385,11 +361,7 @@ async def user_expenses(callback: CallbackQuery):
         return
 
     checks = await db_obj.select_all_checks_for_current_user("cash_check", [tlg_id])
-    await callback.bot.edit_message_reply_markup(
-        chat_id=callback.message.chat.id,
-        message_id=callback.message.message_id,
-        reply_markup=None
-    )
+    await util.remove_prev_inline_keyboard(callback)
     if not checks:
         users = await db_obj.select_all_warriors_with_balance()
         await callback.message.answer(
@@ -409,11 +381,7 @@ async def user_expenses(callback: CallbackQuery):
 @router.callback_query(F.data.startswith("check_data_for_current"))
 async def current_check(callback: CallbackQuery):
     [check_id, tlg_id, name] = callback.data.split(":")[1:]
-    await callback.bot.edit_message_reply_markup(
-        chat_id=callback.message.chat.id,
-        message_id=callback.message.message_id,
-        reply_markup=None
-    )
+    await util.remove_prev_inline_keyboard(callback)
     # select all data about check by its id
     [_, img_url, created_at, amount, comment] = await db_obj.select_check_by_id([int(check_id)])
     # send as message
@@ -438,11 +406,7 @@ async def current_check(callback: CallbackQuery):
 
 @router.callback_query(F.data.startswith("back_to_main"))
 async def back_to_main_menu(callback: CallbackQuery):
-    await callback.bot.edit_message_reply_markup(
-        chat_id=callback.message.chat.id,
-        message_id=callback.message.message_id,
-        reply_markup=None
-    )
+    await util.remove_prev_inline_keyboard(callback)
     await callback.bot.send_message(
         chat_id=callback.from_user.id,
         text=f"Hi, what we do?\n(chose the option down below)",
@@ -457,11 +421,7 @@ async def back_to_main_menu(callback: CallbackQuery):
 # Archive
 @router.callback_query(F.data.startswith("🗃️ Archive 🗃️"))
 async def archive(callback: CallbackQuery):
-    await callback.bot.edit_message_reply_markup(
-        chat_id=callback.message.chat.id,
-        message_id=callback.message.message_id,
-        reply_markup=None
-    )
+    await util.remove_prev_inline_keyboard(callback)
     users = await db_obj.select_warriors_who_have_checks_in_archive()
     await callback.bot.send_message(
         chat_id=callback.from_user.id,
@@ -475,11 +435,7 @@ async def archive(callback: CallbackQuery):
 @router.callback_query(F.data.startswith("user_archive"))
 async def archive(callback: CallbackQuery):
     [tlg_id, name] = callback.data.split(":")[1:]
-    await callback.bot.edit_message_reply_markup(
-        chat_id=callback.message.chat.id,
-        message_id=callback.message.message_id,
-        reply_markup=None
-    )
+    await util.remove_prev_inline_keyboard(callback)
     archived_checks = await db_obj.select_all_checks_for_current_user("check_archive", [tlg_id])
     await callback.message.answer(
         text=f"This is all {name} archived checks\n",
@@ -489,11 +445,7 @@ async def archive(callback: CallbackQuery):
 # arch_check
 @router.callback_query(F.data.startswith("check_from_archive"))
 async def current_arch_check(callback: CallbackQuery):
-    await callback.bot.edit_message_reply_markup(
-        chat_id=callback.message.chat.id,
-        message_id=callback.message.message_id,
-        reply_markup=None
-    )
+    await util.remove_prev_inline_keyboard(callback)
     [check_id, name] = callback.data.split(":")[1:]
     [warrior_id, image_url, created_at,
      amount, comment, added_to_archive] = await db_obj.select_arch_check_by_id([int(check_id)])
@@ -519,12 +471,7 @@ async def current_arch_check(callback: CallbackQuery):
 
 @router.callback_query(F.data.startswith("📊 Statistics 📊"))
 async def archive(callback: CallbackQuery):
-    await callback.bot.edit_message_reply_markup(
-        chat_id=callback.message.chat.id,
-        message_id=callback.message.message_id,
-        reply_markup=None
-    )
-
+    await util.remove_prev_inline_keyboard(callback)
     current_squad_expenses = await db_obj.select_sum_balance()
     user_current_balance = await db_obj.select_balance_by_tlg_id([str(callback.from_user.id)])
     total_squad_refunds = await db_obj.select_total_sum_refund()
@@ -543,11 +490,7 @@ async def archive(callback: CallbackQuery):
 
 @router.callback_query(F.data.startswith("🙋‍♂️ Candidates 🙋‍♂️"))
 async def all_users_with_balance(callback: CallbackQuery):
-    await callback.bot.edit_message_reply_markup(
-        chat_id=callback.message.chat.id,
-        message_id=callback.message.message_id,
-        reply_markup=None
-    )
+    await util.remove_prev_inline_keyboard(callback)
     count_candidates = await db_obj.count_candidates()
     if count_candidates > 0:
         candidates = await db_obj.select_all_candidates()
@@ -564,11 +507,7 @@ async def all_users_with_balance(callback: CallbackQuery):
 
 @router.callback_query(F.data.startswith("🐯 All Warriors 🐯"))
 async def all_users_with_balance(callback: CallbackQuery):
-    await callback.bot.edit_message_reply_markup(
-        chat_id=callback.message.chat.id,
-        message_id=callback.message.message_id,
-        reply_markup=None
-    )
+    await util.remove_prev_inline_keyboard(callback)
     warriors = await db_obj.select_all_warriors()
     await callback.message.answer(
         text=f"List of everyone registered in the bot.\n",
