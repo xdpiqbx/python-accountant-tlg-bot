@@ -1,0 +1,12 @@
+BACK = "⬅️ Back"
+BACK_TO_MAIN = "⬅️ Back to Menu"
+ADD_CHECK = "🧾 Add check 🧾"
+REFUND = "🤑 Refund 🤑"
+YOUR_EXPENSES = "💸 Your expenses 💸"
+SQUAD_EXPENSES = "💰 Squad expenses 💰"
+ARCHIVE = "🗃️ Archive 🗃️"
+REFUND_HISTORY = "📈 Refund history 📈"  # TODO
+STATISTICS = "📊 Statistics 📊"
+ALL_WARRIORS = "🐯 All Warriors 🐯"
+CANDIDATES = "🙋‍♂️ Candidates 🙋‍♂️"
+BANNED = "❌🙅‍♂️ Banned 🙅‍♂️❌"  # TODO

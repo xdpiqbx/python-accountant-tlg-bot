@@ -5,6 +5,7 @@ from aiogram.types import (ReplyKeyboardMarkup, KeyboardButton,
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 
 import app.utils as util
+import app.buttons as btn
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -41,7 +42,7 @@ async def list_of_warriors(users):
         )
     keyboard.add(
         InlineKeyboardButton(
-            text=f"⬅️ Back",
+            text=btn.BACK,
             callback_data=f"back_to_main"
         )
     )
@@ -59,7 +60,7 @@ async def list_of_warriors_archived_checks(users):
         )
     keyboard.add(
         InlineKeyboardButton(
-            text=f"⬅️ Back",
+            text=btn.BACK,
             callback_data=f"back_to_main"
         )
     )
@@ -68,25 +69,25 @@ async def list_of_warriors_archived_checks(users):
 
 async def main_menu(user_id):
     buttons = [
-        "🧾 Add check 🧾",
-        "🤑 Refund 🤑",
-        "💸 Your expenses 💸",
-        "💰 Squad expenses 💰",
-        "🗃️ Archive 🗃️",
-        # "📈 Refund history 📈", # TODO
-        "📊 Statistics 📊"
+        btn.ADD_CHECK,
+        btn.REFUND,
+        btn.YOUR_EXPENSES,
+        btn.SQUAD_EXPENSES,
+        btn.ARCHIVE,
+        # btn.REFUND_HISTORY, # TODO
+        btn.STATISTICS
     ]
     if EXPERT_TLG_ID == user_id:
-        buttons.append("🐯 All Warriors 🐯")
-        buttons.append("🙋‍♂️ Candidates 🙋‍♂️")
-        # buttons.append("❌🙅‍♂️ Banned 🙅‍♂️❌")  # TODO
+        buttons.append(btn.ALL_WARRIORS)
+        buttons.append(btn.CANDIDATES)
+        # buttons.append(btn.BANNED)  # TODO
     inline_keyboard = [[InlineKeyboardButton(text=button, callback_data=button)] for button in buttons]
     return InlineKeyboardMarkup(inline_keyboard=inline_keyboard)
 
 
 async def back_to_main_menu():
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="⬅️ Back to Menu", callback_data=f"back_to_main")]
+        [InlineKeyboardButton(text=btn.BACK_TO_MAIN, callback_data=f"back_to_main")]
     ])
 
 
@@ -107,7 +108,7 @@ async def all_checks_with_buttons(checks):
         )
     keyboard.add(
         InlineKeyboardButton(
-            text=f"⬅️ Back", callback_data="back_to_main"
+            text=btn.BACK, callback_data="back_to_main"
         )
     )
     return keyboard.adjust(2).as_markup()
@@ -131,7 +132,7 @@ async def all_checks_with_buttons_for_current_from_sqad_exp(checks, tlg_id, name
             )
     keyboard.add(
         InlineKeyboardButton(
-            text=f"⬅️ Back", callback_data="💰 Squad expenses 💰"
+            text=btn.BACK, callback_data=btn.SQUAD_EXPENSES
         )
     )
     return keyboard.adjust(2 if to_show_arch_button else 1).as_markup()
@@ -149,7 +150,7 @@ async def all_archived_checks(checks, name):
         )
     keyboard.add(
         InlineKeyboardButton(
-            text=f"⬅️ Back", callback_data="🗃️ Archive 🗃️"
+            text=btn.BACK, callback_data=btn.ARCHIVE
         )
     )
     return keyboard.adjust(1).as_markup()
@@ -158,7 +159,7 @@ async def all_archived_checks(checks, name):
 async def add_to_archive(check_id):
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="Send to archive", callback_data=f"arch_check:{check_id}")],
-        [InlineKeyboardButton(text="⬅️ Back", callback_data=f"💸 Your expenses 💸")]
+        [InlineKeyboardButton(text=btn.BACK, callback_data=btn.YOUR_EXPENSES)]
     ])
 
 
@@ -166,72 +167,31 @@ async def squad_exp_user_checks(check_id, tlg_id, name, to_show_arch_button):
     if to_show_arch_button:
         return InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="Send to archive", callback_data=f"arch_check:{check_id}")],
-            [InlineKeyboardButton(text="⬅️ Back", callback_data=f"user_expenses:{tlg_id}:{name}")]
+            [InlineKeyboardButton(text=btn.BACK, callback_data=f"user_expenses:{tlg_id}:{name}")]
         ])
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="⬅️ Back", callback_data=f"user_expenses:{tlg_id}:{name}")]
+        [InlineKeyboardButton(text=btn.BACK, callback_data=f"user_expenses:{tlg_id}:{name}")]
     ])
 
 
 async def call_squad_expenses():
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="⬅️ Back", callback_data=f"💰 Squad expenses 💰")]
+        [InlineKeyboardButton(text=btn.BACK, callback_data=btn.SQUAD_EXPENSES)]
     ])
 
 
 async def call_your_expenses():
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="⬅️ Back", callback_data=f"💸 Your expenses 💸")]
+        [InlineKeyboardButton(text=btn.BACK, callback_data=btn.YOUR_EXPENSES)]
     ])
 
 
 async def back_to_user_archive(callback_data):
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="⬅️ Back", callback_data=callback_data)]
+        [InlineKeyboardButton(text=btn.BACK, callback_data=callback_data)]
     ])
 
 
 no_comment = ReplyKeyboardMarkup(keyboard=[
     [KeyboardButton(text="No comment")]
 ], resize_keyboard=True)
-
-# ============================================================================
-
-# # Reply big buttons
-# main = ReplyKeyboardMarkup(keyboard=[
-#     [KeyboardButton(text="Catalog")],
-#     [KeyboardButton(text="Cart"), KeyboardButton(text="Contacts")]
-# ], resize_keyboard=True, input_field_placeholder="Choose menu bottom...")
-#
-# # Inline buttons
-# mainInline = InlineKeyboardMarkup(inline_keyboard=[
-#     [InlineKeyboardButton(text="Catalog", callback_data="catalog")],
-#     [
-#         InlineKeyboardButton(text="Cart", callback_data="cart"),
-#         InlineKeyboardButton(text="Contacts", callback_data="contacts")
-#     ]
-# ])
-#
-# settings = InlineKeyboardMarkup(inline_keyboard=[
-#     [InlineKeyboardButton(text="YouTube", url="https://youtube.com")],
-#     [InlineKeyboardButton(text="Google", url="http://google.com")],
-# ])
-#
-# get_contact = ReplyKeyboardMarkup(keyboard=[
-#     [KeyboardButton(text="Send your contact", request_contact=True)]
-# ], resize_keyboard=True)
-#
-# async def reply_cars():
-#     cars = ["Tesla", "Mercedes", "Mitsubishi"]
-#     keyboard = ReplyKeyboardBuilder()
-#     for car in cars:
-#         keyboard.add(KeyboardButton(text=car))
-#     return keyboard.adjust(2).as_markup()
-#
-#
-# async def inline_cities():
-#     cities = ["Kyiv", "Brisbane", "Portland"]
-#     keyboard = InlineKeyboardBuilder()
-#     for city in cities:
-#         keyboard.add(InlineKeyboardButton(text=city, url="https://youtube.com"))
-#     return keyboard.adjust(2).as_markup()
