@@ -87,9 +87,6 @@ class Database:
     async def select_user_by_tlg_id(self, table_name,  data):
         return await self.execute(sql_query.select_by_tlg_id(table_name), *data, fetchrow=True)
 
-    # async def is_user_exists(self, table_name,  data):
-    #     return await self.execute(sql_query.select_by_tlg_id(table_name), *data, fetchrow=True)
-
     async def select_all_warriors_with_balance(self):
         return await self.execute(sql_query.select_all_warriors_with_balance(), fetch=True)
 
